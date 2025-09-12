@@ -141,11 +141,12 @@ button:hover {
 ROSTER = [];
 
 function saveLineup() {
-	setCookie('roster', JSON.stringify(ROSTER), 399);
+	localStorage.setItem('roster', JSON.stringify(ROSTER));
 }
 
 function loadLineup() {
-	ROSTER = JSON.parse(getCookie('roster'));
+	ROSTER = JSON.parse(localStorage.getItem('roster'));
+	refreshRoster();
 }
 
 function setCookie(cname, cvalue, exdays) {

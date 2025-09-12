@@ -244,7 +244,7 @@ function generateAssignments() {
 		} else {
 			start = parseInt(start);
 			for(let i = 0; i < activeRoster.length; i++) {
-				if(activeRoster[i].number === start) {
+				if(parseInt(activeRoster[i].number) === start) {
 					first = i;
 					break;
 				}

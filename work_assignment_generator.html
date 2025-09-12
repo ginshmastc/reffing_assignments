@@ -135,13 +135,10 @@ button:hover {
 ROSTER = [];
 
 function saveLineup() {
-	console.log(JSON.stringify(ROSTER));
-	//setCookie('roster', JSON.stringify(ROSTER), 399);
-	setCookie('roster', 'test', 399);
+	setCookie('roster', JSON.stringify(ROSTER), 399);
 }
 
 function loadLineup() {
-	console.log(getCookie('roster'));
 	ROSTER = JSON.parse(getCookie('roster'));
 }
 

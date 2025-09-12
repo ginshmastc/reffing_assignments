@@ -1,0 +1,305 @@
+<html>
+<head>
+
+</head>
+<body>
+<style>
+body {
+	background-color: gray;
+}
+
+.container {
+	display: grid;
+	grid-template-columns: 1fr 2fr;
+	gap: 1rem;
+	padding: 1.5rem;
+	flex: 1;
+}
+@media (max-width: 768px) {
+	.container {display: flex; flex-direction: column; padding: 1rem;}
+}
+.segment {
+	background: black;
+	border-radius: 8px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.08)
+	padding: 1.25rem
+	display: flex;
+	flex-direction: column;
+}
+
+.segment table {
+	color: #57ff00;
+	width: 95%;
+}
+
+th {
+	background-color: black;
+}
+
+tbody tr:nth-child(odd) {
+	background: #4d4d4d;
+}
+
+tbody tr:nth-child(even) {
+	background: #3d3d3d;
+}
+
+tbody tr:hover {background: #a1a1a1;}
+
+tbody td {
+	padding: 1rem 1rem;
+}
+
+input[type=number] {
+	max-width: 75px;
+}
+
+input {
+	min-height: 3rem;
+	min-width: 1rem;
+}
+
+button {
+	min-height: 2.5rem;
+	background-color: white;
+	border-radius: 4px;
+	border: none;
+}
+
+button:hover {
+	filter: brightness(85%);
+}
+
+.remove {
+	min-width: 40px;
+}
+
+.input-block {
+	width: 100%;
+	color: #57ff00;
+	margin-bottom: 1rem;
+	margin-top: 1rem;
+}
+
+.input-block * {
+	margin-left: 1rem;
+}
+
+#message {
+	margin: 1rem 1rem 1rem 1rem;
+}
+
+</style>
+<div class="container">
+	<div class="segment">
+		<div class="input-block">
+			<button onclick="saveLineup()">Save Lineup</button>
+			<button onclick="loadLineup()"> Load Lineup</button>
+		</div>
+		<table id="roster">
+			<thead>
+				<th><input type="checkbox" onchange="rosterSelectAll()" id="roster-select-all"></th><th>#</th><th>Name</th><th></th>
+			</thead>
+			<tbody id="roster-body">
+			</tbody>
+			<tr style="height: 3rem;">
+				<th><button onclick="addPlayer()" id="roster-add">Add</button></th>
+				<th><input id="roster-number" type="number"></th>
+				<th><input id="roster-name" type="text"></th>
+				<th></th>
+			</tr>
+		</table>
+		<div class="input-block"><label for="settings-num-games"># of sets to work: </label><input id="settings-num-games" type="number" step="1" value="3"></div>
+		<div class="input-block"><label for="settings-starter">Start with worker: </label><input id="settings-starter" type="text" placeholder="name or # (optional)"></div>
+		<div class="input-block"><button onclick="generateAssignments()">Generate Work Assignments</button></div>
+	</div>
+	<div class="segment">
+		<div id="message"></div>
+		<table id="assignments">
+			<thead>
+				<th><input class="job" type="checkbox" id="assignments-l1" checked>Lines 1</th>
+				<th><input class="job" type="checkbox" id="assignments-book" checked>Bookkeeper</th>
+				<th><input class="job" type="checkbox" id="assignments-score" checked>Scorekeeper</th>
+				<th><input class="job" type="checkbox" id="assignments-l2" checked>Lines 2</th>
+				<th><input class="job" type="checkbox" id="assignments-down" checked>Down Ref</th>
+				<th><input class="job" type="checkbox" id="assignments-lib" checked>Libero Tracker</th>
+			</thead>
+			<tbody id="assignments-body">
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<script>
+
+ROSTER = [];
+
+function saveLineup() {
+	console.log(JSON.stringify(ROSTER));
+	//setCookie('roster', JSON.stringify(ROSTER), 399);
+	setCookie('roster', 'test', 399);
+}
+
+function loadLineup() {
+	console.log(getCookie('roster'));
+	ROSTER = JSON.parse(getCookie('roster'));
+}
+
+function setCookie(cname, cvalue, exdays) {
+  const d = new Date();
+  d.setTime(d.getTime() + (exdays*24*60*60*1000));
+  let expires = "expires="+ d.toUTCString();
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+  let name = cname + "=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(';');
+  for(let i = 0; i <ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+
+function rosterSelectAll() {
+	const sel = document.getElementById('roster-select-all').checked;
+	for(let i = 0; i < ROSTER.length; i++) {
+		document.getElementById(`roster-cb-${i}`).checked = sel;
+	}
+}
+
+function rosterSelect(index) {
+	if(!document.getElementById(`roster-cb-${index}`).checked) {
+		document.getElementById(`roster-select-all`).checked = false;
+	}
+}
+
+function addPlayer() {
+	let p = {};
+	p.number = document.getElementById('roster-number').value;
+	p.name = document.getElementById('roster-name').value;
+	ROSTER.push(p);
+	document.getElementById('roster-number').value = '';
+	document.getElementById('roster-name').value = '';
+	refreshRoster();
+}
+
+function removePlayer(index) {
+	if(confirm(`Remove ${ROSTER[index].name} (${ROSTER[index].number}) from roster?`) == true) {
+		ROSTER.splice(index, 1);
+		refreshRoster();
+	}
+}
+
+function refreshRoster() {
+	let html = '';
+	for(let i = 0; i < ROSTER.length; i++) {
+		html += `<tr><td><input onchange="rosterSelect(${i})" id="roster-cb-${i}" type="checkbox" checked></td><td>${ROSTER[i].number}</td><td>${ROSTER[i].name}</td><td><button class="remove" onclick="removePlayer(${i})" id="roster-remove-#{i}"> - </button></td></tr>`;
+	}
+	document.getElementById('roster-body').innerHTML = html;
+}
+
+function generateAssignments() {
+	const start = document.getElementById('settings-starter').value;
+	const numOfGames = document.getElementById('settings-num-games').value;
+	let first = -1;
+	//calculate active jobs
+	const allJobs = document.getElementsByClassName("job");
+	let activeJobs = [];
+	let startingJob = 0;
+	for(let i = 0; i < allJobs.length; i++) {
+		if(allJobs[i].checked) {
+			activeJobs.push(allJobs[i]);
+		}
+	}
+	//calculate active roster
+	let activeRoster = [];
+	for(let i = 0; i < ROSTER.length; i++) {
+		if(document.getElementById(`roster-cb-${i}`).checked) {
+			activeRoster.push(ROSTER[i]);
+		}
+	}
+	//check if enough workers
+	if(activeRoster.length < activeJobs.length) {
+		document.getElementById('message').innerHTML = 'Not enough active workers.';
+		document.getElementById('message').style = 'color: #f2ee0f;';
+		return;
+	}
+	
+	if(start !== '') {
+		if(isNaN(start)) {
+			for(let i = 0; i < activeRoster.length; i++) {
+				if(activeRoster[i].name === start) {
+					first = i;
+					break;
+				}
+				if(first === -1 && activeRoster[i].indexOf(start) !== -1) {
+					first = i;
+				}
+			}
+		} else {
+			start = parseInt(start);
+			for(let i = 0; i < activeRoster.length; i++) {
+				if(activeRoster[i].number === start) {
+					first = i;
+					break;
+				}
+			}
+		}
+	}
+	if(first === -1)
+		first = 0;
+	
+	let assignments = [];
+	
+	for(let i = 0; i < numOfGames; i++) {
+		let a = {};
+		let workers = [];
+		console.log(first);
+		while(workers.length < activeJobs.length) {
+			workers.push(activeRoster[first]);
+			first++;
+			if(first >= activeRoster.length)
+				first = 0;
+		}		
+		
+		console.log("workers ");
+		console.log(workers);
+		//if(activeRoster.length % activeJobs.length === 0) {
+			for(let j = 0; j < i; j++) {
+				workers.push(workers.shift());
+			}
+		//}
+		for(let j = 0; j < activeJobs.length; j++) {
+			a[activeJobs[j].id] = workers[j];
+		}
+		assignments.push(a);
+	}
+	console.log(assignments);
+	let html = ``;
+	
+	for(let i = 0; i < assignments.length; i++) {
+		html += `<tr>`;
+		for(let j = 0; j < allJobs.length; j++) {
+			if(!assignments[i].hasOwnProperty(allJobs[j].id)) {
+				html += `<td></td>`;
+			} else {
+				const player = assignments[i][allJobs[j].id];
+				html += `<td>${player.name} (${player.number})</td>`;
+			}
+		}
+		html += `</tr>`;
+	}
+	document.getElementById('assignments-body').innerHTML = html;
+}
+
+</script>
+</body>
+</html>

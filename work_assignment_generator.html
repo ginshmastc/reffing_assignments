@@ -90,8 +90,9 @@ button:hover {
 	margin-left: 1rem;
 }
 
-#message {
+.message {
 	margin: 1rem 1rem 1rem 1rem;
+	color: #f2ee0f;
 }
 
 </style>
@@ -103,6 +104,7 @@ button:hover {
 			<button onclick="loadLineup()"> Load Lineup</button>
 		</div>
 		<h3>Roster</h3>
+		<div id="roster-message" class="message"></div>
 		<table id="roster">
 			<thead>
 				<th><input type="checkbox" onchange="rosterSelectAll()" id="roster-select-all"></th><th>#</th><th>Name</th><th></th>
@@ -121,7 +123,7 @@ button:hover {
 		<div class="input-block"><button onclick="generateAssignments()">Generate Work Assignments</button></div>
 	</div>
 	<div class="segment">
-		<div id="message"></div>
+		<div class="message" id="message"></div>
 		<table id="assignments">
 			<thead>
 				<th><input class="job" type="checkbox" id="assignments-l1" checked>Lines 1</th>
@@ -143,10 +145,12 @@ ROSTER = [];
 
 function saveLineup() {
 	localStorage.setItem('roster', JSON.stringify(ROSTER));
+	document.getElementById('roster-message').innerHTML = `Lineup has been saved.`;
 }
 
 function loadLineup() {
 	ROSTER = JSON.parse(localStorage.getItem('roster'));
+	document.getElementById('roster-message').innerHTML = `Lineup has been loaded.`;
 	refreshRoster();
 }
 
@@ -211,7 +215,6 @@ function generateAssignments() {
 	//check if enough workers
 	if(activeRoster.length < activeJobs.length) {
 		document.getElementById('message').innerHTML = 'Not enough active workers.';
-		document.getElementById('message').style = 'color: #f2ee0f;';
 		return;
 	}
 	

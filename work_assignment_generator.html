@@ -356,15 +356,19 @@ function renderStats() {
 }
 
 // Ensure the new tab is handled in your switchTab function
-function switchTab(tabId, buttonElement) {
-    const contents = document.getElementsByClassName('tab-content');
-    for (let i = 0; i < contents.length; i++) contents[i].style.display = 'none';
+function switchTab(tabId, btn) {
+    // Hide all
+    document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
     
-    const buttons = document.getElementsByClassName('tab-button');
-    for (let i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
-
+    // Show selected
     document.getElementById(tabId).style.display = 'block';
-    buttonElement.classList.add('active');
+    btn.classList.add('active');
+
+    // If switching to captain tab, refresh the list
+    if (tabId === 'captainTab') {
+        renderCaptainRoster();
+    }
 }
 
 
@@ -541,67 +545,79 @@ function captainSelect(index) {
     }
 }
 
-function refreshCaptainRoster() {
-    let html = '';
-    for(let i = 0; i < ROSTER.length; i++) {
-        // Ensure "available" property exists for new players added
-        if (typeof ROSTER[i].available === 'undefined') {
-            ROSTER[i].available = true; // Default to available
-        }
-        const checkedStatus = ROSTER[i].available ? 'checked' : '';
-        html += `<tr><td><input onchange="captainSelect(${i})" id="captain-cb-${i}" type="checkbox" ${checkedStatus}></td><td>${ROSTER[i].number}</td><td>${ROSTER[i].name}</td></tr>`;
-    }
-    document.getElementById('captain-roster-body').innerHTML = html;
-}
-
-function resetCaptainPool() {
-    for (let i = 0; i < ROSTER.length; i++) {
-        ROSTER[i].available = true;
-    }
-    CAPTAIN_HISTORY = []; // Clear history on reset
-    document.getElementById('captain-history').innerHTML = '';
-    document.getElementById('captain-select-all').checked = true;
-    document.getElementById('captains-output').innerHTML = 'Pool and history reset.';
-    refreshCaptainRoster();
+/**
+ * Renders the roster specifically for the Captain Picker tab.
+ * This should be called whenever the tab is switched or a pick happens.
+ */
+function renderCaptainRoster() {
+    const tbody = document.getElementById('captain-roster-body');
+    tbody.innerHTML = '';
+    
+    ROSTER.forEach((player, index) => {
+        const row = tbody.insertRow();
+        // We add a checkbox so the user can still exclude specific people manually
+        row.innerHTML = `
+            <td><input type="checkbox" class="captain-check" data-index="${index}" checked></td>
+            <td>${player.number}</td>
+            <td>${player.name}</td>
+        `;
+    });
 }
 
 function pickCaptains() {
-    // Get all currently available players from the ROSTER array
-    const availablePlayers = ROSTER.filter(player => player.available);
+    // 1. Identify which players are currently checked in the UI
+    const checkboxes = document.querySelectorAll('.captain-check');
+    let availableIndices = [];
+    
+    checkboxes.forEach(cb => {
+        if (cb.checked) {
+            availableIndices.push(parseInt(cb.dataset.index));
+        }
+    });
 
-    if (availablePlayers.length < 2) {
-        document.getElementById('captains-output').innerHTML = 'Not enough players available to pick 2 captains. Reset the pool or add more players.';
+    if (availableIndices.length < 2) {
+        document.getElementById('captains-output').innerHTML = "⚠️ Not enough players selected to pick 2 captains!";
         return;
     }
 
-    // Pick 2 random players
-    const index1 = Math.floor(Math.random() * availablePlayers.length);
-    const captain1 = availablePlayers[index1];
+    // 2. Pick two random indices from our available list
+    const idx1 = Math.floor(Math.random() * availableIndices.length);
+    let idx2 = Math.floor(Math.random() * availableIndices.length);
+    while (idx1 === idx2) { idx2 = Math.floor(Math.random() * availableIndices.length); }
 
-    // Remove the first captain from the temp list for the second pick
-    availablePlayers.splice(index1, 1);
+    // Get the actual player objects
+    const cap1 = ROSTER[availableIndices[idx1]];
+    const cap2 = ROSTER[availableIndices[idx2]];
 
-    const index2 = Math.floor(Math.random() * availablePlayers.length);
-    const captain2 = availablePlayers[index2];
+    // 3. Remove them from the global ROSTER array
+    // We sort indices descending to ensure splicing doesn't shift the positions of remaining targets
+    const toRemove = [availableIndices[idx1], availableIndices[idx2]].sort((a, b) => b - a);
+    toRemove.forEach(index => ROSTER.splice(index, 1));
 
-    // Display selected captains
-    document.getElementById('captains-output').innerHTML = `
-        Captain 1: ${captain1.name} (${captain1.number})<br>
-        Captain 2: ${captain2.name} (${captain2.number})
-    `;
-
-    // Remove selected captains from the main ROSTER's available pool so they can't be picked again this session
-    // Find the original indices in the ROSTER and set their 'available' status to false
-    const originalIndex1 = ROSTER.findIndex(p => p.number === captain1.number && p.name === captain1.name);
-    const originalIndex2 = ROSTER.findIndex(p => p.number === captain2.number && p.name === captain2.name);
+    // 4. Update UI
+    document.getElementById('captains-output').innerHTML = `Selected: <strong>${cap1.name}</strong> & <strong>${cap2.name}</strong>`;
     
-    if (originalIndex1 !== -1) ROSTER[originalIndex1].available = false;
-    if (originalIndex2 !== -1) ROSTER[originalIndex2].available = false;
+    const historyList = document.getElementById('captain-history');
+    const li = document.createElement('li');
+    li.className = 'history-item';
+    li.innerHTML = `<strong>Set ${historyList.children.length + 1}:</strong> ${cap1.name} (#${cap1.number}) & ${cap2.name} (#${cap2.number})`;
+    historyList.prepend(li);
 
-    // Refresh the UI to reflect who is still available
-    refreshCaptainRoster();
+    // 5. Refresh the list so the removed players disappear
+    renderCaptainRoster();
 }
 
+/**
+ * Resets the pool by reloading the main lineup or clearing history
+ */
+function resetCaptainPool() {
+    if(confirm("This will clear history and reload the roster. Continue?")) {
+        loadLineup(); // Assuming this re-populates the ROSTER array from storage
+        document.getElementById('captain-history').innerHTML = '';
+        document.getElementById('captains-output').innerHTML = 'Pool reset. History cleared.';
+        renderCaptainRoster();
+    }
+}
 
 function updateHistoryUI() {
     let html = '';
@@ -624,5 +640,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 </script>
 </body>
 </html>
+
 
 

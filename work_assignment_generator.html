@@ -150,6 +150,33 @@ button:hover {
     }
 }
 
+	.stat-card {
+    background: #1a1a1a;
+    border: 1px solid #57ff00;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+}
+.stat-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+.stat-btn {
+    flex: 1;
+    min-width: 60px;
+    background: #333;
+    color: #57ff00;
+    border: 1px solid #57ff00;
+    font-weight: bold;
+}
+.stat-avg {
+    font-size: 1.5rem;
+    color: #f2ee0f;
+    float: right;
+}
+
 </style>
 </head>
 <body>
@@ -158,6 +185,7 @@ button:hover {
 <div class="tab-bar">
     <button class="tab-button active" onclick="switchTab('workTab', this)">Work Assignments</button>
     <button class="tab-button" onclick="switchTab('captainTab', this)">Captain Picker</button>
+    <button class="tab-button" onclick="switchTab('statTab', this)">Stat Tracker</button>
 </div>
 
 <div id="workTab" class="tab-content">
@@ -243,6 +271,29 @@ button:hover {
     </div>
 </div>
 
+<div id="statTab" class="tab-content" style="display: none;">
+    <div class="container">
+        <div class="segment">
+            <h3>Add New Stat Category</h3>
+            <div class="input-block">
+                <label>Skill Name:</label>
+                <input id="new-stat-name" type="text" placeholder="e.g. Passing">
+            </div>
+            <div class="input-block">
+                <label>Max Value (0-X):</label>
+                <input id="new-stat-max" type="number" value="3" min="1">
+            </div>
+            <div class="input-block">
+                <button onclick="addStatCategory()" style="background: #57ff00; color: black;">Create Stat Buttons</button>
+            </div>
+        </div>
+        
+        <div class="segment" id="active-stats-container">
+            <h3>Team Stats</h3>
+            <!-- Dynamic stats appear here -->
+        </div>
+    </div>
+</div>
 
 <script>
 
@@ -250,26 +301,70 @@ ROSTER = [];
 // A separate pool for the captain picker to manage availability and resets
 CAPTAIN_POOL = []; 
 
+// --- Stat Tracker Logic ---
+let TEAM_STATS = {};
+
+function addStatCategory() {
+    const name = document.getElementById('new-stat-name').value.trim();
+    const maxValue = parseInt(document.getElementById('new-stat-max').value);
+    
+    if (!name) return;
+
+    TEAM_STATS[name] = {
+        totalPoints: 0,
+        count: 0,
+        maxValue: maxValue
+    };
+
+    document.getElementById('new-stat-name').value = '';
+    renderStats();
+}
+
+function recordStat(skillName, value) {
+    TEAM_STATS[skillName].totalPoints += value;
+    TEAM_STATS[skillName].count += 1;
+    renderStats();
+}
+
+function renderStats() {
+    const container = document.getElementById('active-stats-container');
+    // Clear but keep the header
+    container.innerHTML = '<h3>Team Stats</h3>';
+
+    for (let skill in TEAM_STATS) {
+        const data = TEAM_STATS[skill];
+        const avg = data.count > 0 ? (data.totalPoints / data.count).toFixed(2) : "0.00";
+        
+        let card = document.createElement('div');
+        card.className = 'stat-card';
+        
+        let html = `
+            <span class="stat-avg">Avg: ${avg}</span>
+            <strong style="color: #57ff00; font-size: 1.2rem;">${skill}</strong>
+            <div style="color: #888; font-size: 0.8rem;">Attempts: ${data.count} | Total: ${data.totalPoints}</div>
+            <div class="stat-grid">
+        `;
+
+        for (let i = 0; i <= data.maxValue; i++) {
+            html += `<button class="stat-btn" onclick="recordStat('${skill}', ${i})">${i}</button>`;
+        }
+
+        html += `</div>`;
+        card.innerHTML = html;
+        container.appendChild(card);
+    }
+}
+
+// Ensure the new tab is handled in your switchTab function
 function switchTab(tabId, buttonElement) {
-    // Hide all tab contents
     const contents = document.getElementsByClassName('tab-content');
-    for (let i = 0; i < contents.length; i++) {
-        contents[i].style.display = 'none';
-    }
-
-    // Deactivate all buttons
+    for (let i = 0; i < contents.length; i++) contents[i].style.display = 'none';
+    
     const buttons = document.getElementsByClassName('tab-button');
-    for (let i = 0; i < buttons.length; i++) {
-        buttons[i].classList.remove('active');
-    }
+    for (let i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
 
-    // Show the selected tab and activate the button
     document.getElementById(tabId).style.display = 'block';
     buttonElement.classList.add('active');
-
-    // Refresh the rosters when switching tabs to ensure consistency
-    refreshRoster();
-    refreshCaptainRoster();
 }
 
 
@@ -521,3 +616,4 @@ document.addEventListener('DOMContentLoaded', (event) => {
 </script>
 </body>
 </html>
+

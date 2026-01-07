@@ -1,8 +1,119 @@
-<!-- Add this CSS to your existing <style> block -->
+<html>
+<head>
 <style>
-/* Existing styles... */
+body {
+	background-color: gray;
+	font-family: sans-serif;
+}
 
-.history-list {
+h1, h3 {
+	color: #57ff00;
+	text-align: center;
+}
+
+.tab-bar {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 1rem;
+}
+
+.tab-button {
+	padding: 0.5rem 1rem;
+	background-color: black;
+	color: #57ff00;
+	border: 1px solid #57ff00;
+	cursor: pointer;
+	margin: 0 0.2rem;
+}
+
+.tab-button.active {
+	background-color: #57ff00;
+	color: black;
+}
+
+.container {
+	display: grid;
+	grid-template-columns: 1fr 2fr;
+	gap: 1rem;
+	padding: 1.5rem;
+	flex: 1;
+}
+@media (max-width: 768px) {
+	.container {display: flex; flex-direction: column; padding: 1rem;}
+}
+.segment {
+	background: black;
+	border-radius: 8px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+	padding: 1.25rem;
+	display: flex;
+	flex-direction: column;
+}
+
+.segment table {
+	color: #57ff00;
+	width: 95%;
+}
+
+th {
+	background-color: black;
+}
+
+tbody tr:nth-child(odd) {
+	background: #4d4d4d;
+}
+
+tbody tr:nth-child(even) {
+	background: #3d3d3d;
+}
+
+tbody tr:hover {background: #a1a1a1;}
+
+tbody td {
+	padding: 1rem 1rem;
+}
+
+input[type=number] {
+	max-width: 75px;
+}
+
+input {
+	min-height: 3rem;
+	min-width: 1rem;
+}
+
+button {
+	min-height: 2.5rem;
+	background-color: white;
+	border-radius: 4px;
+	border: none;
+}
+
+button:hover {
+	filter: brightness(85%);
+}
+
+.remove {
+	min-width: 40px;
+}
+
+.input-block {
+	width: 100%;
+	color: #57ff00;
+	margin-bottom: 1rem;
+	margin-top: 1rem;
+}
+
+.input-block * {
+	margin-left: 1rem;
+}
+
+.message {
+	margin: 1rem 1rem 1rem 1rem;
+	color: #f2ee0f;
+}
+
+    .history-list {
     color: white;
     list-style: none;
     padding: 0;
@@ -38,9 +149,61 @@
         margin-bottom: 10px;
     }
 }
-</style>
 
-<!-- Updated Captain Picker Tab HTML -->
+</style>
+</head>
+<body>
+<h1>Fusion Work Assignment Generator</h1>
+
+<div class="tab-bar">
+    <button class="tab-button active" onclick="switchTab('workTab', this)">Work Assignments</button>
+    <button class="tab-button" onclick="switchTab('captainTab', this)">Captain Picker</button>
+</div>
+
+<div id="workTab" class="tab-content">
+	<div class="container">
+		<div class="segment">
+			<div class="input-block">
+				<button onclick="saveLineup()">Save Lineup</button>
+				<button onclick="loadLineup()"> Load Lineup</button>
+			</div>
+			<h3>Roster</h3>
+			<div id="roster-message" class="message"></div>
+			<table id="roster">
+				<thead>
+					<th><input type="checkbox" onchange="rosterSelectAll()" id="roster-select-all" checked></th><th>#</th><th>Name</th><th></th>
+				</thead>
+				<tbody id="roster-body">
+				</tbody>
+				<tr style="height: 3rem;">
+					<th><button onclick="addPlayer()" id="roster-add">Add</button></th>
+					<th><input id="roster-number" type="number"></th>
+					<th><input id="roster-name" type="text"></th>
+					<th></th>
+				</tr>
+			</table>
+			<div class="input-block"><label for="settings-num-games"># of sets to work: </label><input id="settings-num-games" type="number" step="1" value="3"></div>
+			<div class="input-block"><label for="settings-starter">Start with worker: </label><input id="settings-starter" type="text" placeholder="name or # (optional)"></div>
+			<div class="input-block"><button onclick="generateAssignments()">Generate Work Assignments</button></div>
+		</div>
+		<div class="segment">
+			<div class="message" id="message"></div>
+			<table id="assignments">
+				<thead>
+					<th><input class="job" type="checkbox" id="assignments-l1" checked>Lines 1</th>
+					<th><input class="job" type="checkbox" id="assignments-book" checked>Bookkeeper</th>
+					<th><input class="job" type="checkbox" id="assignments-score" checked>Scorekeeper</th>
+					<th><input class="job" type="checkbox" id="assignments-l2" checked>Lines 2</th>
+					<th><input class="job" type="checkbox" id="assignments-down" checked>Down Ref</th>
+					<th><input class="job" type="checkbox" id="assignments-lib" checked>Libero Tracker</th>
+				</thead>
+				<tbody id="assignments-body">
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
 <div id="captainTab" class="tab-content" style="display: none;">
     <!-- Sticky Quick-Action for Mobile -->
     <div class="sticky-action">
@@ -80,11 +243,221 @@
     </div>
 </div>
 
-<script>
-// New global variable for tracking session history
-CAPTAIN_HISTORY = [];
 
-// --- Update these functions in your script block ---
+<script>
+
+ROSTER = [];
+// A separate pool for the captain picker to manage availability and resets
+CAPTAIN_POOL = []; 
+
+function switchTab(tabId, buttonElement) {
+    // Hide all tab contents
+    const contents = document.getElementsByClassName('tab-content');
+    for (let i = 0; i < contents.length; i++) {
+        contents[i].style.display = 'none';
+    }
+
+    // Deactivate all buttons
+    const buttons = document.getElementsByClassName('tab-button');
+    for (let i = 0; i < buttons.length; i++) {
+        buttons[i].classList.remove('active');
+    }
+
+    // Show the selected tab and activate the button
+    document.getElementById(tabId).style.display = 'block';
+    buttonElement.classList.add('active');
+
+    // Refresh the rosters when switching tabs to ensure consistency
+    refreshRoster();
+    refreshCaptainRoster();
+}
+
+
+// --- Generic Roster Management Functions (Used by both tabs) ---
+
+function saveLineup() {
+	localStorage.setItem('roster', JSON.stringify(ROSTER));
+	document.getElementById('roster-message').innerHTML = `Lineup has been saved.`;
+    if(document.getElementById('captain-message')) document.getElementById('captain-message').innerHTML = `Lineup has been saved.`;
+}
+
+function loadLineup() {
+	ROSTER = JSON.parse(localStorage.getItem('roster'));
+	document.getElementById('roster-message').innerHTML = `Lineup has been loaded.`;
+    if(document.getElementById('captain-message')) document.getElementById('captain-message').innerHTML = `Lineup has been loaded.`;
+    refreshRoster();
+    refreshCaptainRoster(); // Also load for the captain picker
+}
+
+function addPlayer() {
+	let p = {};
+	p.number = document.getElementById('roster-number').value;
+	p.name = document.getElementById('roster-name').value;
+	ROSTER.push(p);
+	document.getElementById('roster-number').value = '';
+	document.getElementById('roster-name').value = '';
+	refreshRster();
+    refreshCaptainRoster(); // Update captain roster too
+}
+
+function removePlayer(index) {
+	if(confirm(`Remove ${ROSTER[index].name} (${ROSTER[index].number}) from roster?`) == true) {
+		ROSTER.splice(index, 1);
+		refreshRoster();
+        refreshCaptainRoster(); // Update captain roster too
+	}
+}
+
+
+// --- Work Assignment Tab Functions ---
+
+function rosterSelectAll() {
+	const sel = document.getElementById('roster-select-all').checked;
+	for(let i = 0; i < ROSTER.length; i++) {
+		document.getElementById(`roster-cb-${i}`).checked = sel;
+	}
+}
+
+function rosterSelect(index) {
+	if(!document.getElementById(`roster-cb-${index}`).checked) {
+		document.getElementById(`roster-select-all`).checked = false;
+	}
+}
+
+function refreshRoster() {
+	let html = '';
+	for(let i = 0; i < ROSTER.length; i++) {
+		html += `<tr><td><input onchange="rosterSelect(${i})" id="roster-cb-${i}" type="checkbox" checked></td><td>${ROSTER[i].number}</td><td>${ROSTER[i].name}</td><td><button class="remove" onclick="removePlayer(${i})" id="roster-remove-#{i}"> - </button></td></tr>`;
+	}
+	document.getElementById('roster-body').innerHTML = html;
+}
+
+function generateAssignments() {
+	let start = document.getElementById('settings-starter').value;
+	const numOfGames = document.getElementById('settings-num-games').value;
+	let first = -1;
+	//calculate active jobs
+	const allJobs = document.getElementsByClassName("job");
+	let activeJobs = [];
+	let startingJob = 0;
+	for(let i = 0; i < allJobs.length; i++) {
+		if(allJobs[i].checked) {
+			activeJobs.push(allJobs[i]);
+		}
+	}
+	//calculate active roster
+	let activeRoster = [];
+	for(let i = 0; i < ROSTER.length; i++) {
+		if(document.getElementById(`roster-cb-${i}`).checked) {
+			activeRoster.push(ROSTER[i]);
+		}
+	}
+	//check if enough workers
+	if(activeRoster.length < activeJobs.length) {
+		document.getElementById('message').innerHTML = 'Not enough active workers.';
+		return;
+	}
+	
+	if(start !== '') {
+		if(isNaN(start)) {
+			for(let i = 0; i < activeRoster.length; i++) {
+				if(activeRoster[i].name === start) {
+					first = i;
+					break;
+				}
+				if(first === -1 && activeRoster[i].indexOf(start) !== -1) {
+					first = i;
+				}
+			}
+		} else {
+			start = parseInt(start);
+			for(let i = 0; i < activeRoster.length; i++) {
+				if(parseInt(activeRoster[i].number) === start) {
+					first = i;
+					break;
+				}
+			}
+		}
+	}
+	if(first === -1)
+		first = 0;
+	
+	let assignments = [];
+	
+	for(let i = 0; i < numOfGames; i++) {
+		let a = {};
+		let workers = [];
+		console.log(first);
+		while(workers.length < activeJobs.length) {
+			workers.push(activeRoster[first]);
+			first++;
+			if(first >= activeRoster.length)
+				first = 0;
+		}		
+		
+		console.log("workers ");
+		console.log(workers);
+		//if(activeRoster.length % activeJobs.length === 0) {
+			for(let j = 0; j < i; j++) {
+				workers.push(workers.shift());
+			}
+		//}
+		for(let j = 0; j < activeJobs.length; j++) {
+			a[activeJobs[j].id] = workers[j];
+		}
+		assignments.push(a);
+	}
+	console.log(assignments);
+	let html = ``;
+	
+	for(let i = 0; i < assignments.length; i++) {
+		html += `<tr>`;
+		for(let j = 0; j < allJobs.length; j++) {
+			if(!assignments[i].hasOwnProperty(allJobs[j].id)) {
+				html += `<td></td>`;
+			} else {
+				const player = assignments[i][allJobs[j].id];
+				html += `<td>${player.name} (${player.number})</td>`;
+			}
+		}
+		html += `</tr>`;
+	}
+	document.getElementById('assignments-body').innerHTML = html;
+}
+
+
+// --- Captain Picker Tab Functions ---
+
+function captainSelectAll() {
+    const sel = document.getElementById('captain-select-all').checked;
+    // We update the ROSTER array's "available" status here
+    for(let i = 0; i < ROSTER.length; i++) {
+        ROSTER[i].available = sel;
+    }
+    refreshCaptainRoster();
+}
+
+function captainSelect(index) {
+    // Update the ROSTER array's "available" status when a checkbox is clicked
+    ROSTER[index].available = document.getElementById(`captain-cb-${index}`).checked;
+
+    if(!ROSTER[index].available) {
+        document.getElementById(`captain-select-all`).checked = false;
+    }
+}
+
+function refreshCaptainRoster() {
+    let html = '';
+    for(let i = 0; i < ROSTER.length; i++) {
+        // Ensure "available" property exists for new players added
+        if (typeof ROSTER[i].available === 'undefined') {
+            ROSTER[i].available = true; // Default to available
+        }
+        const checkedStatus = ROSTER[i].available ? 'checked' : '';
+        html += `<tr><td><input onchange="captainSelect(${i})" id="captain-cb-${i}" type="checkbox" ${checkedStatus}></td><td>${ROSTER[i].number}</td><td>${ROSTER[i].name}</td></tr>`;
+    }
+    document.getElementById('captain-roster-body').innerHTML = html;
+}
 
 function resetCaptainPool() {
     for (let i = 0; i < ROSTER.length; i++) {
@@ -134,4 +507,17 @@ function updateHistoryUI() {
     });
     document.getElementById('captain-history').innerHTML = html;
 }
+// Initialize on load
+document.addEventListener('DOMContentLoaded', (event) => {
+    // Try to load lineup automatically if saved
+    if (localStorage.getItem('roster')) {
+        loadLineup();
+    } else {
+        refreshRoster();
+        refreshCaptainRoster();
+    }
+});
+
 </script>
+</body>
+</html>

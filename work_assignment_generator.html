@@ -566,34 +566,42 @@ function resetCaptainPool() {
 }
 
 function pickCaptains() {
+    // Get all currently available players from the ROSTER array
     const availablePlayers = ROSTER.filter(player => player.available);
 
     if (availablePlayers.length < 2) {
-        document.getElementById('captains-output').innerHTML = 'Not enough players. Reset the pool.';
+        document.getElementById('captains-output').innerHTML = 'Not enough players available to pick 2 captains. Reset the pool or add more players.';
         return;
     }
 
+    // Pick 2 random players
     const index1 = Math.floor(Math.random() * availablePlayers.length);
-    const c1 = availablePlayers.splice(index1, 1)[0];
+    const captain1 = availablePlayers[index1];
+
+    // Remove the first captain from the temp list for the second pick
+    availablePlayers.splice(index1, 1);
+
     const index2 = Math.floor(Math.random() * availablePlayers.length);
-    const c2 = availablePlayers[index2];
+    const captain2 = availablePlayers[index2];
 
-    // Current Selection Display
-    const resultText = `${c1.name} (#${c1.number}) & ${c2.name} (#${c2.number})`;
-    document.getElementById('captains-output').innerHTML = `Latest: ${resultText}`;
+    // Display selected captains
+    document.getElementById('captains-output').innerHTML = `
+        Captain 1: ${captain1.name} (${captain1.number})<br>
+        Captain 2: ${captain2.name} (${captain2.number})
+    `;
 
-    // Update History
-    CAPTAIN_HISTORY.unshift(resultText); // Add to top of list
-    updateHistoryUI();
+    // Remove selected captains from the main ROSTER's available pool so they can't be picked again this session
+    // Find the original indices in the ROSTER and set their 'available' status to false
+    const originalIndex1 = ROSTER.findIndex(p => p.number === captain1.number && p.name === captain1.name);
+    const originalIndex2 = ROSTER.findIndex(p => p.number === captain2.number && p.name === captain2.name);
+    
+    if (originalIndex1 !== -1) ROSTER[originalIndex1].available = false;
+    if (originalIndex2 !== -1) ROSTER[originalIndex2].available = false;
 
-    // Mark as unavailable
-    const rIdx1 = ROSTER.findIndex(p => p.number === c1.number && p.name === c1.name);
-    const rIdx2 = ROSTER.findIndex(p => p.number === c2.number && p.name === c2.name);
-    if (rIdx1 !== -1) ROSTER[rIdx1].available = false;
-    if (rIdx2 !== -1) ROSTER[rIdx2].available = false;
-
+    // Refresh the UI to reflect who is still available
     refreshCaptainRoster();
 }
+
 
 function updateHistoryUI() {
     let html = '';
@@ -616,4 +624,5 @@ document.addEventListener('DOMContentLoaded', (event) => {
 </script>
 </body>
 </html>
+
 

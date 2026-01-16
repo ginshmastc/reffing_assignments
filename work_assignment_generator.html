@@ -18,59 +18,57 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
 
-        /* NAVIGATION */
+        /* 1. NAVIGATION */
         nav { background: #000; display: flex; padding: 10px; gap: 8px; border-bottom: 1px solid var(--border); z-index: 100; flex-shrink: 0; }
         .tab-btn { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: #222; color: #888; font-weight: bold; cursor: pointer; }
         .tab-btn.active { background: var(--neon-green); color: #000; border-color: var(--neon-green); }
 
+        /* 2. MAIN CONTAINER */
         main { display: flex; flex: 1; overflow: hidden; flex-direction: column; }
 
-        /* ROSTER SECTION (Persistent & Resizeable) */
+        /* 3. ROSTER SECTION (Desktop/Landscape Default) */
         #roster-section { 
             display: flex; flex-direction: column; background: var(--panel-bg); 
-            flex-shrink: 0; height: 40dvh; border-bottom: 1px solid var(--border);
-            min-height: 50px;
+            flex-shrink: 0; width: 350px; height: 100%; border-right: 2px solid var(--border);
+            transition: height 0.3s ease-in-out; overflow: hidden;
         }
-        .roster-header { padding: 10px 15px; background: #000; font-size: 14px; font-weight: bold; color: var(--neon-green); flex-shrink: 0; }
+
+        /* 4. TOOL CONTENT */
+        #tool-content { flex: 1; overflow-y: auto; padding: 15px; background: var(--bg-dark); }
+        .tool-panel { display: none; }
+        .tool-panel.active { display: block !important; }
+
+        /* 5. RESPONSIVE OVERRIDES (Portrait Mobile Only) */
+        @media (max-width: 799px) and (orientation: portrait) {
+            main { flex-direction: column; }
+            #roster-section { width: 100%; height: 40dvh; border-right: none; border-bottom: 2px solid var(--border); }
+            #roster-section.minimized { height: 45px !important; }
+            #tool-content { height: 60dvh; padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+        }
+
+        @media (min-width: 800px), (orientation: landscape) {
+            main { flex-direction: row; }
+        }
+
+        /* 6. UI COMPONENTS */
+        .roster-header { padding: 10px 15px; background: #000; font-size: 14px; font-weight: bold; color: var(--neon-green); display: flex; justify-content: space-between; align-items: center; cursor: pointer; flex-shrink: 0; }
         #rosterBody { flex: 1; overflow-y: auto; padding: 10px; }
         .player-row { display: flex; align-items: center; gap: 10px; padding: 10px; background: #282828; border-radius: 8px; margin-bottom: 6px; border: 1px solid #333; }
         .player-row input { background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 6px; font-size: 16px; }
         .controls { padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #000; flex-shrink: 0; }
 
-        /* DRAG HANDLE */
-        #drag-handle {
-            height: 30px; background: #222; cursor: ns-resize;
-            display: flex; align-items: center; justify-content: center;
-            border-top: 1px solid #333; border-bottom: 1px solid #333; flex-shrink: 0;
-            touch-action: none;
-        }
-
-        /* TOOL CONTENT */
-        #tool-content { flex: 1; overflow-y: auto; padding: 15px; background: var(--bg-dark); }
-        .tool-panel { display: none; }
-        .tool-panel.active { display: block !important; }
-
-        /* LANDSCAPE / DESKTOP */
-        @media (min-width: 800px), (orientation: landscape) {
-            main { flex-direction: row; }
-            #roster-section { width: 350px; height: 100% !important; border-right: 2px solid var(--border); border-bottom: none; }
-            #drag-handle { display: none !important; }
-        }
-
-        /* STICKY TABLE */
         .sticky-controls { position: sticky; top: -15px; background: var(--bg-dark); z-index: 10; padding-bottom: 15px; border-bottom: 1px solid var(--border); margin-bottom: 15px; }
         .table-wrapper { width: 100%; overflow-x: auto; border-radius: 8px; }
         .assignment-table { width: 100%; border-collapse: collapse; min-width: 600px; }
         .assignment-table th { background: var(--neon-green); color: #000; padding: 12px; }
         .assignment-table td { padding: 12px; border-bottom: 1px solid var(--border); text-align: center; background: #1a1a1a; font-size: 14px; }
-
-        /* BUTTONS */
+        
         button { border: none; border-radius: 6px; padding: 10px; cursor: pointer; font-weight: bold; color: white; background: #444; }
         .btn-main { background: var(--neon-green); color: #000; width: 100%; padding: 15px; border-radius: 10px; margin-top: 10px; }
         .btn-del { background: var(--danger); font-size: 12px; padding: 8px; }
         .job-pool-config { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; background: #000; padding: 12px; border-radius: 12px; margin-bottom: 10px; }
 
-        /* CAPTAIN FLAIR */
+        /* 7. CAPTAIN FLAIR */
         .captain-card { background: #000; border: 2px solid var(--neon-green); padding: 25px 10px; text-align: center; border-radius: 12px; font-weight: bold; min-height: 50px; display: flex; align-items: center; justify-content: center; }
         .pool-chips-container { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; }
         .pool-chip { background: #222; border: 1px solid #444; padding: 5px 12px; border-radius: 20px; font-size: 11px; white-space: nowrap; }
@@ -91,7 +89,10 @@
 
 <main>
     <section id="roster-section">
-        <div class="roster-header">Team Roster</div>
+        <div class="roster-header" onclick="toggleRoster()">
+            Team Roster
+            <span id="roster-toggle-icon">▲</span>
+        </div>
         <div id="rosterBody"></div>
         <div class="controls">
             <button onclick="addPlayer()">+ Add</button>
@@ -100,9 +101,8 @@
         </div>
     </section>
 
-    <div id="drag-handle"><div style="width: 40px; height: 4px; background: #555; border-radius: 2px;"></div></div>
-
     <section id="tool-content">
+        <!-- Tool: Assignments -->
         <div id="work-tool" class="tool-panel active">
             <div class="sticky-controls">
                 <button class="btn-del" onclick="resetShiftCounter()" style="width: 100%; height: 50px; margin-bottom: 10px;">
@@ -124,6 +124,7 @@
             <div class="table-wrapper"><div id="assignTable"></div></div>
         </div>
 
+        <!-- Tool: Captains -->
         <div id="captain-tool" class="tool-panel">
             <button class="btn-main" onclick="pickPair()">[ PICK NEW PAIR ]</button>
             <div style="display: flex; gap: 10px; margin: 20px 0;">
@@ -145,29 +146,20 @@
 </main>
 
 <script>
+    // --- PERSISTENCE ---
     let roster = JSON.parse(localStorage.getItem('vb-roster')) || [];
     let globalPointer = parseInt(localStorage.getItem('vb-pointer')) || 0;
     let shiftCounter = parseInt(localStorage.getItem('vb-shift-counter')) || 0;
     let captainPool = JSON.parse(localStorage.getItem('vb-captain-pool')) || [];
     let currentCaptains = [null, null];
 
-    // --- SWIPE LOGIC FIX ---
-    const handle = document.getElementById('drag-handle');
-    const rosterSection = document.getElementById('roster-section');
-    let isDragging = false;
+    function saveState() {
+        localStorage.setItem('vb-pointer', globalPointer);
+        localStorage.setItem('vb-shift-counter', shiftCounter);
+        document.getElementById('counterVal').innerText = shiftCounter;
+    }
 
-    handle.addEventListener('touchstart', (e) => { isDragging = true; }, { passive: true });
-    window.addEventListener('touchend', () => isDragging = false);
-    window.addEventListener('touchmove', (e) => {
-        if (!isDragging || window.innerWidth > window.innerHeight) return;
-        if (e.cancelable) e.preventDefault();
-        const touchY = e.touches.clientY;
-        const navHeight = document.querySelector('nav').offsetHeight;
-        const newHeight = ((touchY - navHeight) / window.innerHeight) * 100;
-        if (newHeight > 5 && newHeight < 80) rosterSection.style.height = `${newHeight}dvh`;
-    }, { passive: false });
-
-    // --- TOOL SWITCHING ---
+    // --- NAVIGATION ---
     function showTool(id, btn) {
         document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -175,7 +167,15 @@
         btn.classList.add('active');
     }
 
-    // --- ROSTER LOGIC ---
+    function toggleRoster() {
+        if (window.innerWidth >= 800 || window.innerWidth > window.innerHeight) return;
+        const rosterSect = document.getElementById('roster-section');
+        const icon = document.getElementById('roster-toggle-icon');
+        rosterSect.classList.toggle('minimized');
+        icon.innerText = rosterSect.classList.contains('minimized') ? "▼" : "▲";
+    }
+
+    // --- ROSTER MANAGEMENT ---
     function render() {
         const body = document.getElementById('rosterBody');
         body.innerHTML = '';
@@ -198,16 +198,9 @@
     function removePlayer(i) { roster.splice(i, 1); render(); }
     function sortRoster() { roster.sort((a,b) => parseInt(a.number) - parseInt(b.number)); render(); }
     function saveRoster() { localStorage.setItem('vb-roster', JSON.stringify(roster)); alert("Roster Saved!"); }
-    
-    function saveState() {
-        localStorage.setItem('vb-pointer', globalPointer);
-        localStorage.setItem('vb-shift-counter', shiftCounter);
-        document.getElementById('counterVal').innerText = shiftCounter;
-    }
+    function resetShiftCounter() { if(confirm("Reset rotations?")) { shiftCounter=0; globalPointer=0; saveState(); render(); } }
 
-    function resetShiftCounter() { if(confirm("Reset all rotations?")) { shiftCounter=0; globalPointer=0; saveState(); render(); } }
-
-    // --- ASSIGNMENT GENERATION (13-Player Prime Logic) ---
+    // --- ASSIGNMENTS (Prime Rotation) ---
     function generate() {
         const active = roster.filter(p => p.active);
         const jobs = Array.from(document.querySelectorAll('.job-check:checked')).map(c => c.value);
@@ -220,7 +213,7 @@
 
         let tempPointer = globalPointer;
         for (let s = 0; s < numSets; s++) {
-            html += `<tr><td>Set ${s + 1}</td>`;
+            html += `<tr><td>Set ${s+1}</td>`;
             let offset = (shiftCounter * 11 + s) % jobs.length;
             let row = new Array(jobs.length);
             for (let j = 0; j < jobs.length; j++) {
@@ -238,7 +231,7 @@
         document.getElementById('assignTable').innerHTML = html + `</tbody></table>`;
     }
 
-    // --- CAPTAIN LOGIC ---
+    // --- CAPTAIN PICKER ---
     function updatePoolUI() {
         document.getElementById('poolCount').innerText = captainPool.length;
         const list = document.getElementById('poolList');
@@ -263,7 +256,7 @@
         currentCaptains[idx - 1] = captainPool.splice(r, 1)[0];
         localStorage.setItem('vb-captain-pool', JSON.stringify(captainPool));
         const el = document.getElementById(`cap${idx}`);
-        el.classList.remove('flare-active'); void el.offsetWidth; el.classList.add('flare-active');
+        if (el) { el.classList.remove('flare-active'); void el.offsetWidth; el.classList.add('flare-active'); }
         updatePoolUI();
     }
 

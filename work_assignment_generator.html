@@ -2,83 +2,81 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>VB Manager 2026</title>
     <style>
-:root {
-    --bg-dark: #121212; --panel-bg: #1e1e1e;
-    --neon-green: #39FF14; --text-color: #e0e0e0;
-    --danger: #ff4d4d; --border: #333;
-}
+        :root {
+            --bg-dark: #121212; --panel-bg: #1e1e1e;
+            --neon-green: #39FF14; --text-color: #e0e0e0;
+            --danger: #ff4d4d; --border: #333;
+        }
 
-body {
-    font-family: system-ui, -apple-system, sans-serif;
-    margin: 0; background: var(--bg-dark); color: var(--text-color);
-    display: flex; flex-direction: column; height: 100dvh; overflow: hidden;
-}
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0; background: var(--bg-dark); color: var(--text-color);
+            display: flex; flex-direction: column; height: 100dvh; overflow: hidden;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
 
-/* 2026 Navigation */
-nav { background: #000; display: flex; padding: 10px; gap: 8px; border-bottom: 1px solid var(--border); z-index: 100; flex-shrink: 0; }
-.tab-btn { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: #222; color: #888; font-weight: bold; cursor: pointer; }
-.tab-btn.active { background: var(--neon-green); color: #000; border-color: var(--neon-green); }
+        /* 1. NAVIGATION */
+        nav { background: #000; display: flex; padding: 10px; gap: 8px; border-bottom: 1px solid var(--border); z-index: 100; flex-shrink: 0; }
+        .tab-btn { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: #222; color: #888; font-weight: bold; cursor: pointer; }
+        .tab-btn.active { background: var(--neon-green); color: #000; border-color: var(--neon-green); }
 
-main { display: flex; flex: 1; overflow: hidden; flex-direction: column; }
+        main { display: flex; flex: 1; overflow: hidden; flex-direction: column; }
 
-/* ROSTER SECTION: Optimized height for 2026 */
-#roster-section { 
-    display: flex; flex-direction: column; background: var(--panel-bg); 
-    flex-shrink: 0; height: 40dvh; border-bottom: 2px solid var(--border);
-}
-#tool-content { flex: 1; overflow-y: auto; padding: 15px; background: var(--bg-dark); }
+        /* 2. ROSTER SECTION */
+        #roster-section { 
+            display: flex; flex-direction: column; background: var(--panel-bg); 
+            flex-shrink: 0; height: 40dvh; border-bottom: 1px solid var(--border);
+        }
+        .roster-header { padding: 10px 15px; background: #000; font-size: 14px; font-weight: bold; color: var(--neon-green); flex-shrink: 0; }
+        #rosterBody { flex: 1; overflow-y: auto; padding: 10px; }
+        .player-row { display: flex; align-items: center; gap: 10px; padding: 10px; background: #282828; border-radius: 8px; margin-bottom: 6px; border: 1px solid #333; }
+        .player-row input { background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 6px; font-size: 16px; }
+        .controls { padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #000; flex-shrink: 0; }
 
-/* LANDSCAPE MODE & DESKTOP (800px+ width or landscape orientation) */
-@media (min-width: 800px), (orientation: landscape) {
-    main { flex-direction: row; }
-    #roster-section { width: 320px; height: 100%; border-right: 2px solid var(--border); border-bottom: none; }
-    #tool-content { height: 100%; flex: 1; }
-    .job-pool-config { grid-template-columns: repeat(3, 1fr) !important; }
-}
+        /* 3. TOOL CONTENT */
+        #tool-content { flex: 1; overflow-y: auto; padding: 15px; background: var(--bg-dark); }
+        .tool-panel { display: none; }
+        .tool-panel.active { display: block !important; }
 
-/* FIX: Sticky controls so they don't cover sets when scrolling */
-.sticky-controls {
-    position: sticky; top: -15px; /* Adjust based on padding */
-    background: var(--bg-dark); z-index: 10;
-    padding-bottom: 15px; border-bottom: 1px solid var(--border);
-    margin-bottom: 15px;
-}
+        /* 4. DRAG HANDLE (Mobile Vertical Only) */
+        #drag-handle {
+            height: 25px; background: #000; cursor: ns-resize;
+            display: flex; align-items: center; justify-content: center;
+            border-top: 1px solid #333; border-bottom: 1px solid #333; flex-shrink: 0;
+        }
 
-.tool-panel { display: none; }
-.tool-panel.active { display: block !important; }
+        /* 5. RESPONSIVE LAYOUTS (Landscape/Desktop) */
+        @media (min-width: 800px), (orientation: landscape) {
+            main { flex-direction: row; }
+            #roster-section { width: 320px; height: 100% !important; border-right: 2px solid var(--border); border-bottom: none; }
+            #drag-handle { display: none !important; }
+            #tool-content { height: 100% !important; }
+        }
 
-.roster-header { padding: 10px 15px; background: #000; font-size: 14px; font-weight: bold; color: var(--neon-green); }
-#rosterBody { flex: 1; overflow-y: auto; padding: 10px; }
-.player-row { display: flex; align-items: center; gap: 10px; padding: 10px; background: #282828; border-radius: 8px; margin-bottom: 6px; border: 1px solid #333; }
-.player-row input { background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 6px; font-size: 16px; }
-.player-row input[type="text"] { flex: 1; min-width: 0; }
-.player-row input[type="number"] { width: 50px; }
+        /* 6. UI COMPONENTS */
+        .sticky-controls { position: sticky; top: -15px; background: var(--bg-dark); z-index: 10; padding-bottom: 15px; border-bottom: 1px solid var(--border); margin-bottom: 15px; }
+        .table-wrapper { width: 100%; overflow-x: auto; border-radius: 8px; }
+        .assignment-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        .assignment-table th { background: var(--neon-green); color: #000; padding: 12px; position: sticky; top: 0; }
+        .assignment-table td { padding: 12px; border-bottom: 1px solid var(--border); text-align: center; background: #1a1a1a; }
+        .btn-main { background: var(--neon-green); color: #000; font-weight: bold; width: 100%; padding: 15px; border-radius: 10px; border: none; cursor: pointer; }
+        .btn-del { background: var(--danger); font-size: 12px; padding: 8px; border: none; border-radius: 6px; cursor: pointer; color: white; }
+        .job-pool-config { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; background: #000; padding: 12px; border-radius: 12px; margin-bottom: 10px; }
+        
+        /* Captain Styles */
+        .captain-card { background: #000; border: 2px solid var(--neon-green); padding: 25px 10px; text-align: center; border-radius: 12px; font-weight: bold; min-height: 50px; display: flex; align-items: center; justify-content: center; }
+        .pool-chips-container { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; }
+        .pool-chip { background: #222; border: 1px solid #444; padding: 5px 12px; border-radius: 20px; font-size: 12px; white-space: nowrap; }
 
-/* Table Horizontal Scroll */
-.table-wrapper { width: 100%; overflow-x: auto; border-radius: 8px; }
-.assignment-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-.assignment-table th { background: var(--neon-green); color: #000; padding: 12px; position: sticky; top: 0; }
-.assignment-table td { padding: 12px; border-bottom: 1px solid var(--border); text-align: center; background: #1a1a1a; }
-
-button { background: #000; border: 1px solid #444; color: #fff; border-radius: 6px; padding: 10px; cursor: pointer; }
-.btn-main { background: var(--neon-green); color: #000; font-weight: bold; width: 100%; padding: 15px; border-radius: 10px; }
-.btn-del { background: var(--danger); font-size: 12px; padding: 8px; }
-.job-pool-config { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; background: #000; padding: 12px; border-radius: 12px; margin-bottom: 10px; }
-
-/* Flair & Pool UI */
-@keyframes flare {
-    0% { box-shadow: 0 0 0 var(--neon-green); transform: scale(1); }
-    50% { box-shadow: 0 0 25px var(--neon-green); transform: scale(1.05); background: var(--neon-green); color: #000; }
-    100% { box-shadow: 0 0 5px var(--neon-green); transform: scale(1); }
-}
-.flare-active { animation: flare 0.6s ease-out; }
-.captain-card { background: #000; border: 2px solid var(--neon-green); padding: 25px 10px; text-align: center; border-radius: 12px; font-weight: bold; min-height: 50px; display: flex; align-items: center; justify-content: center; }
-.pool-chips-container { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
-.pool-chip { background: #222; border: 1px solid #444; padding: 5px 12px; border-radius: 20px; font-size: 12px; white-space: nowrap; }
-
+        @keyframes flare {
+            0% { box-shadow: 0 0 0 var(--neon-green); transform: scale(1); }
+            50% { box-shadow: 0 0 25px var(--neon-green); transform: scale(1.05); background: var(--neon-green); color: #000; }
+            100% { box-shadow: 0 0 5px var(--neon-green); transform: scale(1); }
+        }
+        .flare-active { animation: flare 0.6s ease-out; }
     </style>
 </head>
 <body>
@@ -92,37 +90,39 @@ button { background: #000; border: 1px solid #444; color: #fff; border-radius: 6
     <section id="roster-section">
         <div class="roster-header">Team Roster</div>
         <div id="rosterBody"></div>
-        <div class="controls" style="padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #000;">
+        <div class="controls">
             <button onclick="addPlayer()">+ Add</button>
             <button onclick="sortRoster()">Sort #</button>
             <button class="tab-btn active" style="grid-column: span 2" onclick="saveRoster()">SAVE ROSTER</button>
         </div>
     </section>
 
+    <div id="drag-handle"><div style="width: 40px; height: 4px; background: #555; border-radius: 2px;"></div></div>
+
     <section id="tool-content">
-<div id="work-tool" class="tool-panel active">
-    <!-- Wrap generation controls in sticky div -->
-    <div class="sticky-controls">
-        <button class="btn-del" onclick="resetShiftCounter()" style="width: 100%; height: 50px; font-weight: bold; margin-bottom: 10px;">
-            RESET REFFED COUNT: <span id="counterVal">0</span>
-        </button>
-        <div class="job-pool-config">
-            <label><input type="checkbox" class="job-check" value="Lines 1" checked> Lines 1</label>
-            <label><input type="checkbox" class="job-check" value="Book" checked> Book</label>
-            <label><input type="checkbox" class="job-check" value="Score" checked> Score</label>
-            <label><input type="checkbox" class="job-check" value="Lines 2" checked> Lines 2</label>
-            <label><input type="checkbox" class="job-check" value="Down Ref" checked> Down Ref</label>
-            <label><input type="checkbox" class="job-check" value="Libero" checked> Libero</label>
+        <!-- Assignments Tool -->
+        <div id="work-tool" class="tool-panel active">
+            <div class="sticky-controls">
+                <button class="btn-del" onclick="resetShiftCounter()" style="width: 100%; height: 50px; font-weight: bold; margin-bottom: 10px;">
+                    RESET REFFED COUNT: <span id="counterVal">0</span>
+                </button>
+                <div class="job-pool-config">
+                    <label><input type="checkbox" class="job-check" value="Lines 1" checked> Lines 1</label>
+                    <label><input type="checkbox" class="job-check" value="Book" checked> Book</label>
+                    <label><input type="checkbox" class="job-check" value="Score" checked> Score</label>
+                    <label><input type="checkbox" class="job-check" value="Lines 2" checked> Lines 2</label>
+                    <label><input type="checkbox" class="job-check" value="Down Ref" checked> Down Ref</label>
+                    <label><input type="checkbox" class="job-check" value="Libero" checked> Libero</label>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="sets" value="3" style="width: 70px; background:#000; color:#fff; border:1px solid #444;">
+                    <button class="btn-main" onclick="generate()">GENERATE ASSIGNMENTS</button>
+                </div>
+            </div>
+            <div class="table-wrapper"><div id="assignTable"></div></div>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <input type="number" id="sets" value="3" style="width: 70px; background:#000; color:#fff; border:1px solid #444;">
-            <button class="btn-main" onclick="generate()">GENERATE ASSIGNMENTS</button>
-        </div>
-    </div>
-    <div class="table-wrapper"><div id="assignTable"></div></div>
-</div>
 
-
+        <!-- Captain Tool -->
         <div id="captain-tool" class="tool-panel">
             <button class="btn-main" onclick="pickPair()">[ PICK NEW PAIR ]</button>
             <div style="display: flex; gap: 10px; margin: 20px 0;">
@@ -144,18 +144,29 @@ button { background: #000; border: 1px solid #444; color: #fff; border-radius: 6
 </main>
 
 <script>
-    let roster = JSON.parse(localStorage.getItem('vb-roster')) || [
-        { name: "Player 1", number: "1", active: true },
-        { name: "Player 2", number: "2", active: true },
-        { name: "Player 3", number: "3", active: true },
-        { name: "Player 4", number: "4", active: true }
-    ];
-
+    // --- Data Management ---
+    let roster = JSON.parse(localStorage.getItem('vb-roster')) || [];
     let globalPointer = parseInt(localStorage.getItem('vb-pointer')) || 0;
     let shiftCounter = parseInt(localStorage.getItem('vb-shift-counter')) || 0;
     let captainPool = JSON.parse(localStorage.getItem('vb-captain-pool')) || [];
     let currentCaptains = [null, null];
 
+    // --- Swipe/Resize Logic ---
+    const handle = document.getElementById('drag-handle');
+    const rosterSection = document.getElementById('roster-section');
+    let isDragging = false;
+
+    handle.addEventListener('touchstart', () => isDragging = true);
+    window.addEventListener('touchend', () => isDragging = false);
+    window.addEventListener('touchmove', (e) => {
+        if (!isDragging || window.innerWidth > window.innerHeight) return;
+        const touchY = e.touches.clientY;
+        const navHeight = document.querySelector('nav').offsetHeight;
+        const newHeight = ((touchY - navHeight) / window.innerHeight) * 100;
+        if (newHeight > 15 && newHeight < 80) rosterSection.style.height = `${newHeight}dvh`;
+    });
+
+    // --- Core Functions ---
     function showTool(id, btn) {
         document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -170,7 +181,7 @@ button { background: #000; border: 1px solid #444; color: #fff; border-radius: 6
             body.innerHTML += `<div class="player-row">
                 <input type="checkbox" ${p.active ? 'checked' : ''} onchange="togglePlayer(${i})">
                 <input type="text" value="${p.name}" onchange="updateName(${i}, this.value)">
-                <input type="number" value="${p.number}" onchange="updateNum(${i}, this.value)">
+                <input type="number" value="${p.number}" onchange="updateNum(${i}, this.value)" style="width:50px">
                 <button class="btn-del" onclick="removePlayer(${i})">×</button>
             </div>`;
         });
@@ -184,13 +195,16 @@ button { background: #000; border: 1px solid #444; color: #fff; border-radius: 6
     function addPlayer() { roster.push({name:"", number:"", active:true}); render(); }
     function removePlayer(i) { roster.splice(i, 1); render(); }
     function sortRoster() { roster.sort((a,b) => parseInt(a.number) - parseInt(b.number)); render(); }
-    function saveRoster() { localStorage.setItem('vb-roster', JSON.stringify(roster)); alert("Saved!"); }
+    function saveRoster() { localStorage.setItem('vb-roster', JSON.stringify(roster)); alert("Roster Saved!"); }
     function saveState() {
         localStorage.setItem('vb-pointer', globalPointer);
         localStorage.setItem('vb-shift-counter', shiftCounter);
+        document.getElementById('counterVal').innerText = shiftCounter;
     }
 
-    function resetShiftCounter() { if(confirm("Reset rotations?")) { shiftCounter=0; globalPointer=0; saveState(); render(); } }
+    function resetShiftCounter() { 
+        if(confirm("Reset rotations?")) { shiftCounter=0; globalPointer=0; saveState(); render(); } 
+    }
 
     function generate() {
         const active = roster.filter(p => p.active);
@@ -211,7 +225,7 @@ button { background: #000; border: 1px solid #444; color: #fff; border-radius: 6
                 let pIdx = (tempPointer + j) % active.length;
                 assignments[(j + offset) % jobs.length] = active[pIdx].name;
             }
-            assignments.forEach(n => html += `<td>${n}</td>`);
+            assignments.forEach(name => html += `<td>${name}</td>`);
             html += `</tr>`;
             for(let i=0; i<jobs.length; i++) {
                 tempPointer++;
@@ -220,7 +234,6 @@ button { background: #000; border: 1px solid #444; color: #fff; border-radius: 6
         }
         globalPointer = tempPointer; saveState();
         document.getElementById('assignTable').innerHTML = html + `</tbody></table>`;
-        document.getElementById('counterVal').innerText = shiftCounter;
     }
 
     function updatePoolUI() {
@@ -244,8 +257,7 @@ button { background: #000; border: 1px solid #444; color: #fff; border-radius: 6
             captainPool = active.filter(p => !curIds.includes(p.number)).map(p => ({...p}));
         }
         const r = Math.floor(Math.random() * captainPool.length);
-        currentCaptains[idx - 1] = captainPool.splice(r, 1)[0]; // Fix: access first element
-        
+        currentCaptains[idx - 1] = captainPool.splice(r, 1)[0];
         localStorage.setItem('vb-captain-pool', JSON.stringify(captainPool));
         const el = document.getElementById(`cap${idx}`);
         if (el) { el.classList.remove('flare-active'); void el.offsetWidth; el.classList.add('flare-active'); }

@@ -262,6 +262,30 @@
     }
 
     render();
+	
+	function initApp() {
+    const savedData = localStorage.getItem('vb_roster_2026');
+    
+    if (savedData) {
+        // Automatically load from localStorage if it exists
+        try {
+            roster = JSON.parse(savedData);
+            console.log("Roster automatically loaded from storage.");
+        } catch (e) {
+            console.error("Error parsing saved roster, falling back to default.", e);
+        }
+    } else {
+        // Fallback to the default roster defined at the top of the script
+        console.log("No saved roster found. Loading defaults.");
+    }
+    
+    // Always render the roster to the UI regardless of source
+    render();
+}
+
+// Call the initialization function when the page is ready
+// Placing it at the end of your script ensures all functions are defined
+initApp();
 </script>
 </body>
 </html>

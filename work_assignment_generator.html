@@ -80,6 +80,35 @@
         input, button { background: #000; border: 1px solid #444; color: #fff; border-radius: 6px; padding: 8px; }
         .btn-main { background: var(--neon-green); color: #000; font-weight: bold; width: 100%; padding: 15px; margin-top: 10px; border-radius: 10px; }
         .btn-del { background: var(--danger); font-size: 12px; padding: 5px 10px; }
+		
+		/* RESPONSIVE DESIGN 2026 */
+@media (max-width: 850px) {
+    main { 
+        flex-direction: column; 
+    }
+    #roster-section { 
+        width: 100%; 
+        /* Increased from 30vh to 45dvh for better usability */
+        height: 45dvh; 
+        min-height: 250px; 
+        border-right: none; 
+        border-bottom: 2px solid var(--border); 
+    }
+    #tool-content { 
+        /* Assignments area takes the remaining 55dvh */
+        height: 55dvh; 
+        flex: none; 
+    }
+    /* Larger touch targets for mobile roster */
+    .player-row {
+        padding: 12px;
+        min-height: 44px; /* Standard 2026 touch target height */
+    }
+    .player-row input[type="text"] {
+        font-size: 16px; /* Prevents auto-zoom on iOS */
+    }
+}
+
     </style>
 </head>
 <body>

@@ -1,688 +1,355 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<style>
-body {
-	background-color: gray;
-	font-family: sans-serif;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VB Team Manager 2026</title>
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --panel-bg: #1e1e1e;
+            --neon-green: #39FF14;
+            --text-color: #e0e0e0;
+            --danger: #ff4d4d;
+            --border: #444;
+            --primary-btn-bg: #28a745;
+        }
 
-h1, h3 {
-	color: #57ff00;
-	text-align: center;
-}
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: var(--bg-dark);
+            color: var(--text-color);
+        }
 
-.tab-bar {
-	display: flex;
-	justify-content: center;
-	margin-bottom: 1rem;
-}
+        /* Navigation Tabs */
+        nav {
+            background: #000;
+            display: flex;
+            padding: 10px 15px;
+            gap: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
 
-.tab-button {
-	padding: 0.5rem 1rem;
-	background-color: black;
-	color: #57ff00;
-	border: 1px solid #57ff00;
-	cursor: pointer;
-	margin: 0 0.2rem;
-}
+        .tab-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-color);
+            padding: 10px 15px;
+            cursor: pointer;
+            flex: 1;
+            transition: background 0.3s, color 0.3s, border-color 0.3s;
+        }
 
-.tab-button.active {
-	background-color: #57ff00;
-	color: black;
-}
+        .tab-btn.active {
+            background: var(--neon-green);
+            color: var(--bg-dark);
+            font-weight: bold;
+            border-color: var(--neon-green);
+        }
 
-.container {
-	display: grid;
-	grid-template-columns: 1fr 2fr;
-	gap: 1rem;
-	padding: 1.5rem;
-	flex: 1;
-}
-@media (max-width: 768px) {
-	.container {display: flex; flex-direction: column; padding: 1rem;}
-}
-.segment {
-	background: black;
-	border-radius: 8px;
-	box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-	padding: 1.25rem;
-	display: flex;
-	flex-direction: column;
-}
+        /* Main Layout */
+        main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
 
-.segment table {
-	color: #57ff00;
-	width: 95%;
-}
+        /* Roster Sidebar */
+        #roster-section {
+            width: 350px;
+            background: var(--panel-bg);
+            border-right: 1px solid var(--border);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
 
-th {
-	background-color: black;
-}
+        .roster-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
 
-tbody tr:nth-child(odd) {
-	background: #4d4d4d;
-}
+        .roster-table th, .roster-table td { padding: 8px; border-bottom: 1px solid var(--border); text-align: left; }
+        .roster-table th { color: var(--neon-green); border-bottom: 2px solid var(--neon-green); }
 
-tbody tr:nth-child(even) {
-	background: #3d3d3d;
-}
+        input[type="text"], input[type="number"] {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text-color);
+            padding: 5px;
+            width: 90%;
+            border-radius: 4px;
+        }
 
-tbody tr:hover {background: #a1a1a1;}
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: auto;
+        }
 
-tbody td {
-	padding: 1rem 1rem;
-}
+        /* General Buttons */
+        button {
+            padding: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background: var(--primary-btn-bg);
+            color: white;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.85; }
 
-input[type=number] {
-	max-width: 75px;
-}
+        .btn-delete { background: var(--danger); padding: 5px 10px; }
+        .btn-sort { background: #555; }
+        .btn-load { background: #555; }
 
-input {
-	min-height: 3rem;
-	min-width: 1rem;
-}
+        /* Tools Area */
+        #tool-content { flex: 1; padding: 20px; overflow-y: auto; }
+        .tool-panel { display: none; }
+        .tool-panel.active { display: block; }
 
-button {
-	min-height: 2.5rem;
-	background-color: white;
-	border-radius: 4px;
-	border: none;
-}
+        h2 { color: var(--neon-green); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
 
-button:hover {
-	filter: brightness(85%);
-}
+        /* Assignment UI */
+        .job-pool-config {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
 
-.remove {
-	min-width: 40px;
-}
+        .assignment-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .assignment-table th { background: var(--neon-green); color: var(--bg-dark); padding: 12px; }
+        .assignment-table td { border: 1px solid var(--border); padding: 10px; text-align: center; }
 
-.input-block {
-	width: 100%;
-	color: #57ff00;
-	margin-bottom: 1rem;
-	margin-top: 1rem;
-}
+        /* Captain Picker UI */
+        .captain-container { text-align: center; }
+        .captain-display { display: flex; justify-content: center; gap: 30px; margin: 30px 0; }
+        .captain-card {
+            background: var(--panel-bg);
+            border: 2px solid var(--neon-green);
+            padding: 20px;
+            min-width: 150px;
+            font-size: 24px;
+            color: var(--neon-green);
+            border-radius: 8px;
+        }
 
-.input-block * {
-	margin-left: 1rem;
-}
+        /* Flare (more subtle) */
+        @keyframes subtleGlow {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; background: var(--neon-green); color: var(--bg-dark);}
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .picked-flare { animation: subtleGlow 0.6s ease-out 2; }
 
-.message {
-	margin: 1rem 1rem 1rem 1rem;
-	color: #f2ee0f;
-}
+        .history-list { max-width: 400px; margin: 20px auto; border-top: 1px solid var(--border); padding-top: 15px;}
+        .history-list div { padding: 4px 0; border-bottom: 1px solid #333; }
 
-    .history-list {
-    color: white;
-    list-style: none;
-    padding: 0;
-    margin-top: 1rem;
-}
-
-.history-item {
-    background: #2d2d2d;
-    margin-bottom: 0.5rem;
-    padding: 0.75rem;
-    border-radius: 4px;
-    border-left: 4px solid #57ff00;
-    font-size: 0.9rem;
-}
-
-.sticky-action {
-    background: black;
-    padding: 10px;
-    border-bottom: 1px solid #57ff00;
-    margin-bottom: 1rem;
-    display: flex;
-    justify-content: center;
-}
-
-/* Mobile adjustments for 2026 standards */
-@media (max-width: 768px) {
-    .container { 
-        display: flex; 
-        flex-direction: column; 
-    }
-    button {
-        width: 100%; /* Larger tap targets for mobile */
-        margin-bottom: 10px;
-    }
-}
-
-	.stat-card {
-    background: #1a1a1a;
-    border: 1px solid #57ff00;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    border-radius: 8px;
-}
-.stat-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1rem;
-}
-.stat-btn {
-    flex: 1;
-    min-width: 60px;
-    background: #333;
-    color: #57ff00;
-    border: 1px solid #57ff00;
-    font-weight: bold;
-}
-.stat-avg {
-    font-size: 1.5rem;
-    color: #f2ee0f;
-    float: right;
-}
-
-</style>
+        /* Responsiveness for mobile */
+        @media (max-width: 768px) {
+            main { flex-direction: column; }
+            #roster-section { width: auto; border-right: none; border-bottom: 1px solid var(--border); max-height: 40vh; }
+            .job-pool-config { grid-template-columns: repeat(2, 1fr); }
+            .captain-display { flex-direction: column; gap: 10px; }
+            .captain-card { min-width: auto; }
+        }
+    </style>
 </head>
 <body>
-<h1>Fusion Work Assignment Generator</h1>
 
-<div class="tab-bar">
-    <button class="tab-button active" onclick="switchTab('workTab', this)">Work Assignments</button>
-    <button class="tab-button" onclick="switchTab('captainTab', this)">Captain Picker</button>
-    <button class="tab-button" onclick="switchTab('statTab', this)">Stat Tracker</button>
-</div>
+<nav>
+    <button class="tab-btn active" onclick="showTool('work-tool', this)">Reffing Work</button>
+    <button class="tab-btn" onclick="showTool('captain-tool', this)">Captain Picker</button>
+</nav>
 
-<div id="workTab" class="tab-content">
-	<div class="container">
-		<div class="segment">
-			<div class="input-block">
-				<button onclick="saveLineup()">Save Lineup</button>
-				<button onclick="loadLineup()"> Load Lineup</button>
-			</div>
-			<h3>Roster</h3>
-			<div id="roster-message" class="message"></div>
-			<table id="roster">
-				<thead>
-					<th><input type="checkbox" onchange="rosterSelectAll()" id="roster-select-all" checked></th><th>#</th><th>Name</th><th></th>
-				</thead>
-				<tbody id="roster-body">
-				</tbody>
-				<tr style="height: 3rem;">
-					<th><button onclick="addPlayer()" id="roster-add">Add</button></th>
-					<th><input id="roster-number" type="number"></th>
-					<th><input id="roster-name" type="text"></th>
-					<th></th>
-				</tr>
-			</table>
-			<div class="input-block"><label for="settings-num-games"># of sets to work: </label><input id="settings-num-games" type="number" step="1" value="3"></div>
-			<div class="input-block"><label for="settings-starter">Start with worker: </label><input id="settings-starter" type="text" placeholder="name or # (optional)"></div>
-			<div class="input-block"><button onclick="generateAssignments()">Generate Work Assignments</button></div>
-		</div>
-		<div class="segment">
-			<div class="message" id="message"></div>
-			<table id="assignments">
-				<thead>
-					<th><input class="job" type="checkbox" id="assignments-l1" checked>Lines 1</th>
-					<th><input class="job" type="checkbox" id="assignments-book" checked>Bookkeeper</th>
-					<th><input class="job" type="checkbox" id="assignments-score" checked>Scorekeeper</th>
-					<th><input class="job" type="checkbox" id="assignments-l2" checked>Lines 2</th>
-					<th><input class="job" type="checkbox" id="assignments-down" checked>Down Ref</th>
-					<th><input class="job" type="checkbox" id="assignments-lib" checked>Libero Tracker</th>
-				</thead>
-				<tbody id="assignments-body">
-				</tbody>
-			</table>
-		</div>
-	</div>
-</div>
-
-<div id="captainTab" class="tab-content" style="display: none;">
-    <!-- Sticky Quick-Action for Mobile -->
-    <div class="sticky-action">
-        <button onclick="pickCaptains()" style="background-color: #57ff00; color: black; font-weight: bold; padding: 0 2rem;">
-            PICK CAPTAINS NOW
-        </button>
-    </div>
-
-    <div class="container">
-        <div class="segment">
-            <div class="input-block">
-                <button onclick="saveLineup()">Save Lineup</button>
-                <button onclick="loadLineup()"> Load Lineup</button>
-            </div>
-            <h3>Available Players</h3>
-            <div id="captain-message" class="message"></div>
-            <table id="captain-roster">
+<main>
+    <section id="roster-section">
+        <h2 style="margin-top: 0;">Team Roster</h2>
+        <div style="overflow-y: auto; flex: 1;">
+            <table class="roster-table">
                 <thead>
-                    <th><input type="checkbox" onchange="captainSelectAll()" id="captain-select-all" checked></th><th>#</th><th>Name</th>
+                    <tr>
+                        <th>In</th>
+                        <th>Name</th>
+                        <th>#</th>
+                        <th></th>
+                    </tr>
                 </thead>
-                <tbody id="captain-roster-body"></tbody>
+                <tbody id="rosterBody"></tbody>
             </table>
-            <div class="input-block">
-                <button onclick="resetCaptainPool()">Reset Pool & History</button>
-            </div>
         </div>
-        
-        <div class="segment">
-            <h3>History</h3>
-            <div id="captains-output" class="message" style="color: #57ff00; font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 10px;">
-                No captains selected yet.
-            </div>
-            <ul id="captain-history" class="history-list">
-                <!-- History items will appear here -->
-            </ul>
+        <div class="controls">
+            <button onclick="addRow()">+ Player</button>
+            <button class="btn-sort" onclick="sortRosterByNumber()">Sort #</button>
+            <button onclick="saveRoster()">Save Local</button>
+            <button class="btn-load" onclick="loadRoster()">Load Last</button>
         </div>
-    </div>
-</div>
+    </section>
 
-<div id="statTab" class="tab-content" style="display: none;">
-    <div class="container">
-        <div class="segment">
-            <h3>Add New Stat Category</h3>
-            <div class="input-block">
-                <label>Skill Name:</label>
-                <input id="new-stat-name" type="text" placeholder="e.g. Passing">
+    <section id="tool-content">
+        <!-- Work assignments -->
+        <div id="work-tool" class="tool-panel active">
+            <h2>Work Assignments</h2>
+            <div class="job-pool-config">
+                <label><input type="checkbox" class="job-check" value="Lines 1" checked> Lines 1</label>
+                <label><input type="checkbox" class="job-check" value="Bookkeeper" checked> Bookkeeper</label>
+                <label><input type="checkbox" class="job-check" value="Scorekeeper" checked> Scorekeeper</label>
+                <label><input type="checkbox" class="job-check" value="Lines 2" checked> Lines 2</label>
+                <label><input type="checkbox" class="job-check" value="Down Ref" checked> Down Ref</label>
+                <label><input type="checkbox" class="job-check" value="Libero Tracker" checked> Libero Tracker</label>
             </div>
-            <div class="input-block">
-                <label>Max Value (0-X):</label>
-                <input id="new-stat-max" type="number" value="3" min="1">
+            
+            <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+                <div>Sets: <input type="number" id="setCount" value="3" style="width: 50px;"></div>
+                <div>Start with (#): <input type="number" id="startJersey" style="width: 60px;"></div>
+                <button onclick="generateAssignments()">Generate Assignments</button>
             </div>
-            <div class="input-block">
-                <button onclick="addStatCategory()" style="background: #57ff00; color: black;">Create Stat Buttons</button>
+            <div id="assignmentResult"></div>
+        </div>
+
+        <!-- Captain Picker -->
+        <div id="captain-tool" class="tool-panel">
+            <div class="captain-container">
+                <h2>Captain Picker</h2>
+                <button onclick="pickCaptains()" style="font-size: 1.1em; padding: 15px 30px; margin: 10px;">Pick Captains!</button>
+                
+                <div class="captain-display">
+                    <div class="captain-card" id="cap1">---</div>
+                    <div class="captain-card" id="cap2">---</div>
+                </div>
+
+                <div class="history-list">
+                    <strong>Past Captains (this session):</strong>
+                    <div id="historyItems"></div>
+                </div>
             </div>
         </div>
-        
-        <div class="segment" id="active-stats-container">
-            <h3>Team Stats</h3>
-            <!-- Dynamic stats appear here -->
-        </div>
-    </div>
-</div>
+    </section>
+</main>
 
 <script>
+    let roster = [
+        { name: "Alpha", number: "1", active: true },
+        { name: "Beta", number: "5", active: true },
+        { name: "Gamma", number: "10", active: true },
+        { name: "Delta", number: "14", active: true },
+        { name: "Epsilon", number: "20", active: true },
+        { name: "Zeta", number: "33", active: true }
+    ];
 
-ROSTER = [];
-// A separate pool for the captain picker to manage availability and resets
-CAPTAIN_POOL = []; 
+    function renderRoster() {
+        const tbody = document.getElementById('rosterBody');
+        tbody.innerHTML = '';
+        roster.forEach((player, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="checkbox" ${player.active ? 'checked' : ''} onchange="updatePlayer(${index}, 'active', this.checked)"></td>
+                <td><input type="text" value="${player.name}" onchange="updatePlayer(${index}, 'name', this.value)" style="width: 100px;"></td>
+                <td><input type="number" value="${player.number}" onchange="updatePlayer(${index}, 'number', this.value)" style="width: 40px;"></td>
+                <td><button class="btn-delete" onclick="removePlayer(${index})">X</button></td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
 
-	/**
- * Syncs the current state of Roster and Captain Pool to localStorage
- */
-function syncStorage() {
-    localStorage.setItem('fusion_roster', JSON.stringify(ROSTER));
-    // The captain pool state persists
-    localStorage.setItem('fusion_captain_pool', JSON.stringify(CAPTAIN_POOL));
-}
+    function updatePlayer(index, field, value) { roster[index][field] = value; }
+    function addRow() { roster.push({ name: "Player", number: "", active: true }); renderRoster(); }
+    function removePlayer(index) { roster.splice(index, 1); renderRoster(); }
+    function sortRosterByNumber() { roster.sort((a, b) => Number(a.number) - Number(b.number)); renderRoster(); }
+    function saveRoster() { localStorage.setItem('vbRosterDark', JSON.stringify(roster)); }
+    function loadRoster() {
+        const data = localStorage.getItem('vbRosterDark');
+        if (data) { roster = JSON.parse(data); renderRoster(); }
+    }
 
-// --- Stat Tracker Logic ---
-let TEAM_STATS = {};
+    function showTool(toolId, btn) {
+        document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(toolId).classList.add('active');
+        btn.classList.add('active');
+    }
 
-function addStatCategory() {
-    const name = document.getElementById('new-stat-name').value.trim();
-    const maxValue = parseInt(document.getElementById('new-stat-max').value);
-    
-    if (!name) return;
+    // Work assignments logic (same as before, now uses the 'checked' state of job checkboxes)
+    function generateAssignments() {
+        sortRosterByNumber();
+        const pool = roster.filter(p => p.active);
+        if (pool.length === 0) return alert("Roster pool is empty!");
+        const jobs = Array.from(document.querySelectorAll('.job-check:checked')).map(c => c.value);
+        if (jobs.length === 0) return alert("No jobs selected.");
 
-    TEAM_STATS[name] = {
-        totalPoints: 0,
-        count: 0,
-        maxValue: maxValue
-    };
+        const sets = parseInt(document.getElementById('setCount').value) || 1;
+        const startNum = document.getElementById('startJersey').value;
+        let pointer = pool.findIndex(p => p.number == startNum);
+        if (pointer === -1) pointer = 0;
 
-    document.getElementById('new-stat-name').value = '';
-    renderStats();
-}
+        let html = `<table class="assignment-table"><thead><tr><th>Set</th>`;
+        jobs.forEach(j => html += `<th>${j}</th>`);
+        html += `</tr></thead><tbody>`;
 
-function recordStat(skillName, value) {
-    TEAM_STATS[skillName].totalPoints += value;
-    TEAM_STATS[skillName].count += 1;
-    renderStats();
-}
+        for (let s = 1; s <= sets; s++) {
+            html += `<tr><td>Set ${s}</td>`;
+            jobs.forEach(() => {
+                const p = pool[pointer % pool.length];
+                html += `<td>${p.name} (#${p.number})</td>`;
+                pointer++;
+            });
+            html += `</tr>`;
+        }
+        document.getElementById('assignmentResult').innerHTML = html + `</tbody></table>`;
+    }
 
-function renderStats() {
-    const container = document.getElementById('active-stats-container');
-    // Clear but keep the header
-    container.innerHTML = '<h3>Team Stats</h3>';
+    // Captain Picker logic
+    function pickCaptains() {
+        let activeIndices = roster.map((p, i) => p.active ? i : -1).filter(i => i !== -1);
 
-    for (let skill in TEAM_STATS) {
-        const data = TEAM_STATS[skill];
-        const avg = data.count > 0 ? (data.totalPoints / data.count).toFixed(2) : "0.00";
-        
-        let card = document.createElement('div');
-        card.className = 'stat-card';
-        
-        let html = `
-            <span class="stat-avg">Avg: ${avg}</span>
-            <strong style="color: #57ff00; font-size: 1.2rem;">${skill}</strong>
-            <div style="color: #888; font-size: 0.8rem;">Attempts: ${data.count} | Total: ${data.totalPoints}</div>
-            <div class="stat-grid">
-        `;
-
-        for (let i = 0; i <= data.maxValue; i++) {
-            html += `<button class="stat-btn" onclick="recordStat('${skill}', ${i})">${i}</button>`;
+        // If pool is exhausted, silently reset
+        if (activeIndices.length < 2) {
+            roster.forEach(p => p.active = true);
+            activeIndices = roster.map((p, i) => i);
         }
 
-        html += `</div>`;
-        card.innerHTML = html;
-        container.appendChild(card);
-    }
-}
-
-// Ensure the new tab is handled in your switchTab function
-function switchTab(tabId, btn) {
-    // Hide all
-    document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-    
-    // Show selected
-    document.getElementById(tabId).style.display = 'block';
-    btn.classList.add('active');
-
-    // If switching to captain tab, refresh the list
-    if (tabId === 'captainTab') {
-        renderCaptainRoster();
-    }
-}
-
-
-// --- Generic Roster Management Functions (Used by both tabs) ---
-
-function saveLineup() {
-	localStorage.setItem('roster', JSON.stringify(ROSTER));
-	document.getElementById('roster-message').innerHTML = `Lineup has been saved.`;
-    if(document.getElementById('captain-message')) document.getElementById('captain-message').innerHTML = `Lineup has been saved.`;
-}
-
-function loadLineup() {
-	ROSTER = JSON.parse(localStorage.getItem('roster'));
-	document.getElementById('roster-message').innerHTML = `Lineup has been loaded.`;
-    if(document.getElementById('captain-message')) document.getElementById('captain-message').innerHTML = `Lineup has been loaded.`;
-    refreshRoster();
-    refreshCaptainRoster(); // Also load for the captain picker
-}
-
-function addPlayer() {
-	let p = {};
-	p.number = document.getElementById('roster-number').value;
-	p.name = document.getElementById('roster-name').value;
-	ROSTER.push(p);
-	document.getElementById('roster-number').value = '';
-	document.getElementById('roster-name').value = '';
-	refreshRster();
-    refreshCaptainRoster(); // Update captain roster too
-}
-
-function removePlayer(index) {
-	if(confirm(`Remove ${ROSTER[index].name} (${ROSTER[index].number}) from roster?`) == true) {
-		ROSTER.splice(index, 1);
-		refreshRoster();
-        refreshCaptainRoster(); // Update captain roster too
-	}
-}
-
-
-// --- Work Assignment Tab Functions ---
-
-function rosterSelectAll() {
-	const sel = document.getElementById('roster-select-all').checked;
-	for(let i = 0; i < ROSTER.length; i++) {
-		document.getElementById(`roster-cb-${i}`).checked = sel;
-	}
-}
-
-function rosterSelect(index) {
-	if(!document.getElementById(`roster-cb-${index}`).checked) {
-		document.getElementById(`roster-select-all`).checked = false;
-	}
-}
-
-function refreshRoster() {
-	let html = '';
-	for(let i = 0; i < ROSTER.length; i++) {
-		html += `<tr><td><input onchange="rosterSelect(${i})" id="roster-cb-${i}" type="checkbox" checked></td><td>${ROSTER[i].number}</td><td>${ROSTER[i].name}</td><td><button class="remove" onclick="removePlayer(${i})" id="roster-remove-#{i}"> - </button></td></tr>`;
-	}
-	document.getElementById('roster-body').innerHTML = html;
-}
-
-function generateAssignments() {
-	let start = document.getElementById('settings-starter').value;
-	const numOfGames = document.getElementById('settings-num-games').value;
-	let first = -1;
-	//calculate active jobs
-	const allJobs = document.getElementsByClassName("job");
-	let activeJobs = [];
-	let startingJob = 0;
-	for(let i = 0; i < allJobs.length; i++) {
-		if(allJobs[i].checked) {
-			activeJobs.push(allJobs[i]);
-		}
-	}
-	//calculate active roster
-	let activeRoster = [];
-	for(let i = 0; i < ROSTER.length; i++) {
-		if(document.getElementById(`roster-cb-${i}`).checked) {
-			activeRoster.push(ROSTER[i]);
-		}
-	}
-	//check if enough workers
-	if(activeRoster.length < activeJobs.length) {
-		document.getElementById('message').innerHTML = 'Not enough active workers.';
-		return;
-	}
-	
-	if(start !== '') {
-		if(isNaN(start)) {
-			for(let i = 0; i < activeRoster.length; i++) {
-				if(activeRoster[i].name === start) {
-					first = i;
-					break;
-				}
-				if(first === -1 && activeRoster[i].indexOf(start) !== -1) {
-					first = i;
-				}
-			}
-		} else {
-			start = parseInt(start);
-			for(let i = 0; i < activeRoster.length; i++) {
-				if(parseInt(activeRoster[i].number) === start) {
-					first = i;
-					break;
-				}
-			}
-		}
-	}
-	if(first === -1)
-		first = 0;
-	
-	let assignments = [];
-	
-	for(let i = 0; i < numOfGames; i++) {
-		let a = {};
-		let workers = [];
-		console.log(first);
-		while(workers.length < activeJobs.length) {
-			workers.push(activeRoster[first]);
-			first++;
-			if(first >= activeRoster.length)
-				first = 0;
-		}		
-		
-		console.log("workers ");
-		console.log(workers);
-		//if(activeRoster.length % activeJobs.length === 0) {
-			for(let j = 0; j < i; j++) {
-				workers.push(workers.shift());
-			}
-		//}
-		for(let j = 0; j < activeJobs.length; j++) {
-			a[activeJobs[j].id] = workers[j];
-		}
-		assignments.push(a);
-	}
-	console.log(assignments);
-	let html = ``;
-	
-	for(let i = 0; i < assignments.length; i++) {
-		html += `<tr>`;
-		for(let j = 0; j < allJobs.length; j++) {
-			if(!assignments[i].hasOwnProperty(allJobs[j].id)) {
-				html += `<td></td>`;
-			} else {
-				const player = assignments[i][allJobs[j].id];
-				html += `<td>${player.name} (${player.number})</td>`;
-			}
-		}
-		html += `</tr>`;
-	}
-	document.getElementById('assignments-body').innerHTML = html;
-}
-
-
-// --- Captain Picker Tab Functions ---
-
-function captainSelectAll() {
-    const sel = document.getElementById('captain-select-all').checked;
-    // We update the ROSTER array's "available" status here
-    for(let i = 0; i < ROSTER.length; i++) {
-        ROSTER[i].available = sel;
-    }
-    refreshCaptainRoster();
-}
-
-function captainSelect(index) {
-    // Update the ROSTER array's "available" status when a checkbox is clicked
-    ROSTER[index].available = document.getElementById(`captain-cb-${index}`).checked;
-
-    if(!ROSTER[index].available) {
-        document.getElementById(`captain-select-all`).checked = false;
-    }
-}
-/**
- * Renders the roster specifically for the Captain Picker tab.
- * Uses checkboxes to indicate availability in the current pool.
- */
-function renderCaptainRoster() {
-    const tbody = document.getElementById('captain-roster-body');
-    tbody.innerHTML = '';
-    
-    ROSTER.forEach((player, index) => {
-        // Check if the player's name is currently in the CAPTAIN_POOL
-        const isAvailable = CAPTAIN_POOL.some(p => p.name === player.name);
-        const row = tbody.insertRow();
-        row.innerHTML = `
-            <td><input type="checkbox" class="captain-check" data-name="${player.name}" ${isAvailable ? 'checked' : ''}></td>
-            <td>${player.number}</td>
-            <td>${player.name}</td>
-        `;
-    });
-}
-
-function pickCaptains() {
-    // 1. Identify which players are currently checked in the UI (User input for availability)
-    const checkboxes = document.querySelectorAll('.captain-check');
-    let userAvailablePlayers = [];
-    
-    checkboxes.forEach(cb => {
-        if (cb.checked) {
-            // Find the player object from the main ROSTER using the name stored in data-name
-            const playerName = cb.dataset.name;
-            const playerObj = ROSTER.find(p => p.name === playerName);
-            if (playerObj) {
-                userAvailablePlayers.push(playerObj);
-            }
-        }
-    });
-
-    // We now filter our actual working pool based on the user's current checkbox selection
-    // This updates the CAPTAIN_POOL to reflect the UI state
-    CAPTAIN_POOL = CAPTAIN_POOL.filter(poolPlayer => 
-        userAvailablePlayers.some(userPlayer => userPlayer.name === poolPlayer.name)
-    );
-    syncStorage();
-
-
-    // 2. Handle Pool Exhaustion
-    if (CAPTAIN_POOL.length < 2) {
-        // Reset the pool to the full roster if not enough players are left
-        CAPTAIN_POOL = [...ROSTER];
-        syncStorage(); // Persist the reset
-        document.getElementById('captains-output').innerHTML = "⚠️ Pool was empty. Resetting pool for new picks.";
+        // Pick two players randomly
+        const pick1Index = activeIndices.splice(Math.floor(Math.random() * activeIndices.length), 1)[0];
+        const pick2Index = activeIndices.splice(Math.floor(Math.random() * activeIndices.length), 1)[0];
         
-        // If still not enough players in the full roster, stop
-        if (CAPTAIN_POOL.length < 2) {
-             document.getElementById('captains-output').innerHTML = "⚠️ Not enough players in full roster to pick 2 captains!";
-             renderCaptainRoster();
-             return;
-        }
+        const p1 = roster[pick1Index];
+        const p2 = roster[pick2Index];
+
+        // Update display and add flare
+        const c1 = document.getElementById('cap1');
+        const c2 = document.getElementById('cap2');
+        c1.innerText = `${p1.name} (#${p1.number})`;
+        c2.innerText = `${p2.name} (#${p2.number})`;
+        
+        [c1, c2].forEach(el => {
+            el.classList.remove('picked-flare');
+            void el.offsetWidth;
+            el.classList.add('picked-flare');
+        });
+
+        // Remove from pool (in-memory) and refresh visual roster
+        p1.active = false;
+        p2.active = false;
+        renderRoster();
+
+        // History
+        const hist = document.getElementById('historyItems');
+        hist.innerHTML = `<div>&gt; ${p1.name} & ${p2.name}</div>` + hist.innerHTML;
     }
 
-    // 3. Pick two random players from the current CAPTAIN_POOL
-    const idx1 = Math.floor(Math.random() * CAPTAIN_POOL.length);
-    let cap1 = CAPTAIN_POOL[idx1];
-    
-    // Temporarily remove first captain for the second pick to ensure uniqueness
-    const tempPool = [...CAPTAIN_POOL];
-    tempPool.splice(idx1, 1);
-    
-    const idx2 = Math.floor(Math.random() * tempPool.length);
-    let cap2 = tempPool[idx2];
-    
-    // Ensure we reference the correct objects in the original CAPTAIN_POOL for removal later
-    if (CAPTAIN_POOL.indexOf(cap2) > idx1) {
-        cap2 = CAPTAIN_POOL[CAPTAIN_POOL.indexOf(cap2)];
-    }
-
-    // 4. Remove them from the CAPTAIN_POOL array (using filter method is safer here)
-    CAPTAIN_POOL = CAPTAIN_POOL.filter(player => player.name !== cap1.name && player.name !== cap2.name);
-    syncStorage(); // Save the new, smaller pool
-
-
-    // 5. Update UI and history
-    document.getElementById('captains-output').innerHTML = `Selected: <strong>${cap1.name}</strong> & <strong>${cap2.name}</strong>`;
-    
-    const historyList = document.getElementById('captain-history');
-    const li = document.createElement('li');
-    li.className = 'history-item';
-    li.innerHTML = `<strong>Set ${historyList.children.length + 1}:</strong> ${cap1.name} (#${cap1.number}) & ${cap2.name} (#${cap2.number})`;
-    historyList.prepend(li);
-
-    // 6. Refresh the list so checkboxes update to reflect remaining availability
-    renderCaptainRoster();
-}
-
-/**
- * Resets the working captain pool to match the full roster
- */
-function resetCaptainPool() {
-    if(confirm("This will clear history and reload the roster. Continue?")) {
-        // Load the full roster state and set the pool equal to it
-        loadLineup(); 
-        CAPTAIN_POOL = [...ROSTER]; 
-        syncStorage();
-        document.getElementById('captain-history').innerHTML = '';
-        document.getElementById('captains-output').innerHTML = 'Pool reset. History cleared.';
-        renderCaptainRoster();
-    }
-}
-
-function updateHistoryUI() {
-    let html = '';
-    CAPTAIN_HISTORY.forEach((entry, index) => {
-        html += `<li class="history-item"><strong>Round ${CAPTAIN_HISTORY.length - index}:</strong> ${entry}</li>`;
-    });
-    document.getElementById('captain-history').innerHTML = html;
-}
-// Initialize on load
-document.addEventListener('DOMContentLoaded', (event) => {
-    // Try to load lineup automatically if saved
-    if (localStorage.getItem('roster')) {
-        loadLineup();
-    } else {
-        refreshRoster();
-        refreshCaptainRoster();
-    }
-});
-
+    // Initial Load
+    renderRoster();
 </script>
+
 </body>
 </html>
-
-
-
-

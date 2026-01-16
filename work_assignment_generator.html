@@ -205,35 +205,62 @@
         btn.classList.add('active');
     }
 
-    function generate() {
-        sortRoster();
-        const players = roster.filter(p => p.active);
-        const jobs = Array.from(document.querySelectorAll('.job-check:checked')).map(c => c.value);
-        if(!players.length || !jobs.length) return;
+function generate() {
+    const activePlayers = roster.filter(p => p.active);
+    const selectedJobs = Array.from(document.querySelectorAll('.job-check:checked')).map(cb => cb.value);
+    const setCycles = parseInt(document.getElementById('sets').value);
+    const startNum = document.getElementById('startJersey').value;
 
-        const setTotal = parseInt(document.getElementById('sets').value) || 1;
-        const start = document.getElementById('startJersey').value;
-        let pIndex = players.findIndex(p => p.number == start);
-        if(pIndex === -1) pIndex = 0;
-
-        let html = '<table class="assignment-table"><thead><tr><th>Set</th>';
-        jobs.forEach(j => html += `<th>${j}</th>`);
-        html += '</tr></thead><tbody>';
-
-        for (let s = 1; s <= setTotal; s++) {
-            html += `<tr><td>${s}</td>`;
-            jobs.forEach(() => {
-                const p = players[pIndex % players.length];
-                html += `<td>${p.name} (#${p.number})</td>`;
-                pIndex++;
-            });
-            // SHIFT LOGIC: Increment pIndex by 1 additional spot at the end of each set
-            // This prevents "even" groups from getting the same jobs repeatedly.
-            pIndex++; 
-            html += '</tr>';
-        }
-        document.getElementById('assignTable').innerHTML = html + '</tbody></table>';
+    if (activePlayers.length === 0 || selectedJobs.length === 0) {
+        alert("Need players and jobs!");
+        return;
     }
+
+    const numJobs = selectedJobs.length;
+    const numPlayers = activePlayers.length;
+
+    // 1. Find overall starting index based on Jersey #
+    let baseStartIndex = 0;
+    if (startNum) {
+        const foundIndex = activePlayers.findIndex(p => p.number === startNum);
+        if (foundIndex !== -1) baseStartIndex = foundIndex;
+    }
+
+    let html = `<table class="assignment-table"><thead><tr><th>Set</th>`;
+    selectedJobs.forEach(j => html += `<th>${j}</th>`);
+    html += `</tr></thead><tbody>`;
+
+    for (let s = 0; s < setCycles; s++) {
+        // STEP A: Select the "Group"
+        // Every set, we move to the next X players (where X = numJobs)
+        const groupStart = (baseStartIndex + (s * numJobs)) % numPlayers;
+        
+        // Extract exactly the next 'numJobs' players into a temporary array for this set
+        let currentGroup = [];
+        for (let i = 0; i < numJobs; i++) {
+            currentGroup.push(activePlayers[(groupStart + i) % numPlayers]);
+        }
+
+        // STEP B: Assign Jobs with a Shift
+        // Shift amount = (s + 1). Set 1 shifts once, Set 2 shifts twice, etc.
+        const shiftAmount = s + 1;
+
+        html += `<tr><td><strong>${s + 1}</strong></td>`;
+        selectedJobs.forEach((job, jobIdx) => {
+            // Apply the shift within the selected group
+            const shiftedIdx = (jobIdx + shiftAmount) % numJobs;
+            const player = currentGroup[shiftedIdx];
+            
+            html += `<td>${player.name} <br><small>#${player.number}</small></td>`;
+        });
+        html += `</tr>`;
+    }
+
+    html += `</tbody></table>`;
+    document.getElementById('assignTable').innerHTML = html;
+}
+
+
 
     function pick() {
         let pool = roster.map((p, i) => p.active ? i : -1).filter(i => i !== -1);
